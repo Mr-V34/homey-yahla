@@ -10,5 +10,9 @@
   "0.1.2": {
     "en": "Removing the PIN on the settings page works again: press the button twice to confirm.",
     "sv": "Att ta bort PIN på inställningssidan fungerar igen: tryck två gånger på knappen för att bekräfta."
+  },
+  "0.2.0": {
+    "en": "Now also works with ASUS and OpenWrt routers, not only UniFi. Alerts from these routers wait a few seconds so they include the device's name and IP address. The settings page shows which routers work and what each one tells you, and has a save button right under the allowed senders. Uses less memory over time.",
+    "sv": "Fungerar nu även med ASUS- och OpenWrt-routrar, inte bara UniFi. Larm från dessa routrar väntar några sekunder så att enhetens namn och IP-adress kommer med. Inställningssidan visar vilka routrar som fungerar och vad varje router berättar, och har en sparknapp direkt under tillåtna avsändare. Använder mindre minne över tid."
   }
 }

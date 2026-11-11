@@ -14,6 +14,8 @@
     details.dev summary small { opacity: .7; margin-left: 6px; }
     details.dev .info { padding: 6px 0 4px 16px; }
     details.dev .info div { overflow-wrap: anywhere; }
+    ul.sources { padding-left: 18px; margin: 6px 0; }
+    ul.sources li { margin: 4px 0; }
   </style>
 </head>
 <body>
@@ -26,6 +28,18 @@
     <legend class="homey-form-legend" data-i18n="settings.status"></legend>
     <p id="status"></p>
     <p id="warnings" class="warn"></p>
+  </fieldset>
+
+  <fieldset class="homey-form-fieldset">
+    <legend class="homey-form-legend" data-src="title"></legend>
+    <p data-src="intro"></p>
+    <ul class="sources">
+      <li data-src="unifi"></li>
+      <li data-src="asus"></li>
+      <li data-src="openwrt"></li>
+      <li data-src="unsupported"></li>
+    </ul>
+    <p class="muted" data-src="note"></p>
   </fieldset>
 
   <fieldset class="homey-form-fieldset" id="unlockBox" style="display: none">
@@ -41,6 +55,7 @@
   <div id="content" style="display: none">
     <fieldset class="homey-form-fieldset">
       <legend class="homey-form-legend" data-i18n="settings.newDevices"></legend>
+      <p class="muted" data-i18n="settings.deviceHelp"></p>
       <div id="newList"></div>
     </fieldset>
 
@@ -56,6 +71,7 @@
         <input class="homey-form-input" id="senders" type="text" autocomplete="off" maxlength="100" />
       </div>
       <div id="seenSenders"></div>
+      <button id="saveSenders" class="homey-button-primary-full" data-i18n="settings.saveSenders"></button>
     </fieldset>
 
     <fieldset class="homey-form-fieldset">
@@ -321,6 +337,9 @@
         });
       });
 
+      // Same save as below; this button sits next to the field it saves.
+      $('saveSenders').addEventListener('click', function () { $('saveConfig').click(); });
+
       $('savePin').addEventListener('click', function () {
         Homey.api('POST', '/pin', { token: token, newPin: $('newPin').value }, function (err, r) {
           $('newPin').value = '';
@@ -353,7 +372,8 @@
         });
       });
 
-      // Option texts are set here, not with data-i18n, to be sure they are translated.
+      // Option texts and the router list are set here, not with data-i18n, to be sure they are translated.
+      Array.prototype.forEach.call(document.querySelectorAll('[data-src]'), function (n) { n.textContent = t('sources.' + n.getAttribute('data-src')); });
       Array.prototype.forEach.call($('logLevel').options, function (o) { o.textContent = t('log.' + o.value); });
 
       refresh();

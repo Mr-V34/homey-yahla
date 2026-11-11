@@ -3,7 +3,7 @@
 **Know when a stranger joins your network.**
 
 YAHLA (Yet Another Homey Log Analyser) is a Homey Pro app that listens to the network logs your
-UniFi network already sends. When a device that you have not approved joins the network,
+router or access points already send. When a device that you have not approved joins the network,
 YAHLA tells you in the Homey timeline and starts your Flows.
 
 The source is public so that anyone can see exactly what the app does with the data it receives.
@@ -19,8 +19,18 @@ The source is public so that anyone can see exactly what the app does with the d
   packet looks forged, or when its settings are changed from outside the app.
 - Sends a daily report at 07:00. If the report does not come, YAHLA is not working.
 
-Today YAHLA reads UniFi Network client events (the "Activity Logging (SIEM server)" export).
-Other log formats are counted and reported, never guessed.
+## Supported routers
+
+| Router | How to send logs | What YAHLA gets | Tested |
+| --- | --- | --- | --- |
+| UniFi | Activity Logging (SIEM server) | MAC, IP, name, network and VLAN, access point or switch port | Yes, real equipment |
+| ASUS (Asuswrt, Merlin) | System Log, Remote log server | MAC, IP, name, interface (br0), radio (eth2); no VLAN | Published log samples only |
+| OpenWrt and others with hostapd + dnsmasq | Remote syslog | Same as ASUS | Published log samples only |
+
+Not supported: TP-Link Deco, AVM Fritz!Box and Netgear home routers (we found no way to make them
+send logs), TP-Link Omada and internet providers' routers (not yet). On ASUS and OpenWrt the Wi-Fi
+line comes about a second before the DHCP line, so an alert waits up to 10 seconds for it to get the
+name and IP. Other log formats are counted and reported, never guessed.
 
 ## What it does not do
 
@@ -31,7 +41,8 @@ Other log formats are counted and reported, never guessed.
 ## Setup
 
 1. Install YAHLA on your Homey Pro.
-2. In UniFi Network, open the Activity Logging setting for a SIEM server (under CyberSecure or
+2. Point your router's logs at your Homey's IP address, UDP port `5514`. On ASUS: Administration
+   or System Log, "Remote log server". In UniFi Network, open the Activity Logging setting for a SIEM server (under CyberSecure or
    Control Plane, depending on your version) and enter your Homey's IP address and port `5514`.
    In the UniFi versions we have used, this setting takes one address only, so it replaces any
    other log server you send to.
