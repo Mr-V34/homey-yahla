@@ -35,8 +35,8 @@ test('an unapproved device that changes network alerts at once', () => {
 
 test('approved and ignored devices never alert', () => {
   const store = emptyStore();
-  store.devices['02:00:00:00:00:01'] = { s: 'approved', f: T0, l: T0, n: 'vlan:10', a: null };
-  store.devices['02:00:00:00:00:02'] = { s: 'ignored', f: T0, l: T0, n: 'vlan:20', a: null };
+  store.devices['02:00:00:00:00:01'] = { s: 'approved', f: T0, l: T0, n: 'vlan:10', a: null, i: null, w: null };
+  store.devices['02:00:00:00:00:02'] = { s: 'ignored', f: T0, l: T0, n: 'vlan:20', a: null, i: null, w: null };
   assert.strictEqual(handleEvent(store, ev(f.WIFI_JOIN, T0 + COOLDOWN_MS * 2)), null);
   assert.strictEqual(handleEvent(store, ev(f.joinOn('02:00:00:00:00:02', 99), T0 + 5)), null);
   assert.strictEqual(store.devices['02:00:00:00:00:01'].s, 'approved');
@@ -53,7 +53,7 @@ test('a full list drops the oldest unapproved device first', () => {
   const store = emptyStore();
   for (let i = 0; i < MAX_DEVICES; i += 1) {
     const mac = `02:00:00:00:${(i >> 8).toString(16).padStart(2, '0')}:${(i & 255).toString(16).padStart(2, '0')}`;
-    store.devices[mac] = { s: i === 0 ? 'new' : 'approved', f: T0, l: T0 + i, n: null, a: null };
+    store.devices[mac] = { s: i === 0 ? 'new' : 'approved', f: T0, l: T0 + i, n: null, a: null, i: null, w: null };
   }
   assert.strictEqual(handleEvent(store, ev(f.joinOn('02:00:00:00:ff:ff', 1), T0)).type, 'new');
   assert.ok(!('02:00:00:00:00:00' in store.devices));
@@ -63,15 +63,30 @@ test('a full list drops the oldest unapproved device first', () => {
   assert.strictEqual(handleEvent(store, ev(f.joinOn('02:00:00:00:fe:fe', 1), T0)).type, 'full');
 });
 
+test('v1 data from milestone 1 is migrated to v2', () => {
+  const { store, problem } = loadStore({ v: 1, devices: { '02:00:00:00:00:0a': { s: 'new', f: 1, l: 2, n: 'vlan:10', a: 1 } } });
+  assert.strictEqual(problem, null);
+  assert.strictEqual(store.v, 2);
+  assert.deepStrictEqual(store.devices['02:00:00:00:00:0a'], { s: 'new', f: 1, l: 2, n: 'vlan:10', a: 1, i: null, w: null });
+});
+
+test('ip and place are kept up to date', () => {
+  const store = emptyStore();
+  handleEvent(store, ev(f.WIFI_JOIN, T0));
+  assert.strictEqual(store.devices['02:00:00:00:00:01'].i, '192.168.1.50');
+  assert.strictEqual(store.devices['02:00:00:00:00:01'].w, 'Hall AP');
+});
+
 test('stored data is checked and old or broken data is not trusted', () => {
   assert.strictEqual(loadStore(null).problem, 'empty');
   assert.strictEqual(loadStore({ v: 99, devices: {} }).problem, 'unknown_version');
   const { store, problem } = loadStore({
-    v: 1,
+    v: 2,
     devices: {
-      '02:00:00:00:00:01': { s: 'approved', f: 1, l: 2, n: null, a: null },
+      '02:00:00:00:00:01': { s: 'approved', f: 1, l: 2, n: null, a: null, i: null, w: null },
       'not-a-mac': { s: 'approved', f: 1, l: 2, n: null, a: null },
       '02:00:00:00:00:02': { s: 'owner', f: 1, l: 2, n: null, a: null },
+      '02:00:00:00:00:03': { s: 'new', f: 1, l: 2, n: null, a: null, i: 'x'.repeat(99), w: null },
     },
   });
   assert.strictEqual(problem, 'dropped');
@@ -87,7 +102,7 @@ test('receiver caps size and rate and counts each outcome', () => {
   handlePacket(rx, Buffer.from('hello'), T0);
   for (let i = 0; i < MAX_PER_MINUTE; i += 1) handlePacket(rx, Buffer.from('x'), T0);
   assert.deepStrictEqual(rx.counters, {
-    packets: 5 + MAX_PER_MINUTE, oversize: 1, rate: 4, unknown: MAX_PER_MINUTE - 4 + 1, bad: 1, skip: 1, events: 1,
+    packets: 5 + MAX_PER_MINUTE, oversize: 1, rate: 4, foreign: 0, unknown: MAX_PER_MINUTE - 4 + 1, bad: 1, skip: 1, events: 1,
   });
   assert.ok(handlePacket(rx, Buffer.from(f.WIFI_JOIN), T0 + 60000), 'new minute, new budget');
 });

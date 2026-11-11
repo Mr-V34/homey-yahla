@@ -29,5 +29,27 @@
         "name": "B.Frank"
       }
     ]
+  },
+  "api": {
+    "getStatus": {
+      "method": "GET",
+      "path": "/status"
+    },
+    "getDevices": {
+      "method": "GET",
+      "path": "/devices"
+    },
+    "setPin": {
+      "method": "POST",
+      "path": "/pin"
+    },
+    "deviceAction": {
+      "method": "POST",
+      "path": "/device"
+    },
+    "setConfig": {
+      "method": "POST",
+      "path": "/config"
+    }
   }
 }

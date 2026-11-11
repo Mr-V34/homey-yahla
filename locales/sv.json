@@ -4,6 +4,76 @@
     "unapproved": "**Ej godkänd enhet** anslöt igen: **__mac__** (IP __ip__, nät __network__, vid __where__)",
     "hop": "**Ej godkänd enhet bytte nät**: **__mac__** nu på __network__ (IP __ip__, vid __where__)",
     "full": "**Enhetslistan är full** av godkända enheter. Nya enheter kan inte följas: **__mac__**",
-    "socket": "**YAHLA kan inte ta emot loggar** (__code__). Inga enheter kontrolleras."
+    "socket": "**YAHLA kan inte ta emot loggar** (__code__). Inga enheter kontrolleras.",
+    "tamper": "**YAHLA-inställning ändrades utifrån** (__key__). Ändringen togs tillbaka. Kontrollera vem som har åtkomst till din Homey.",
+    "storeProblem": "**YAHLA kunde inte läsa sparad __what__** (__problem__). Appen startade med standardvärden.",
+    "pinSet": "**YAHLA-PIN har satts.**",
+    "pinChanged": "**YAHLA-PIN har ändrats.**",
+    "configChanged": "**YAHLA-inställningar ändrades** (avsändare eller larmnivåer).",
+    "action": {
+      "approve": "**Enhet godkänd** i YAHLA: **__mac__**",
+      "ignore": "**Enhet ignoreras** i YAHLA: **__mac__**",
+      "unapprove": "**Godkännande borttaget** i YAHLA: **__mac__**",
+      "forget": "**Enhet glömd** i YAHLA: **__mac__**"
+    }
+  },
+  "settings": {
+    "title": "YAHLA",
+    "intro": "Larmar när en enhet som du inte har godkänt ansluter till nätverket. Varje ändring kräver din PIN.",
+    "status": "Status",
+    "statusLine": "Lyssnar: __listening__. Paket: __packets__, klienthändelser: __events__, okända: __unknown__, förfalskade: __bad__, från andra avsändare: __foreign__. Enheter: __fresh__ nya, __approved__ godkända, __ignored__ ignorerade.",
+    "yes": "ja",
+    "no": "nej",
+    "warnNotListening": "YAHLA tar inte emot loggar.",
+    "warnNoPin": "Sätt en PIN först (längst ner på sidan).",
+    "warnNoSenders": "Ingen avsändare angiven: loggar från alla adresser tas emot.",
+    "pinForChanges": "PIN för ändringar",
+    "newDevices": "Nya enheter (ej godkända)",
+    "knownDevices": "Godkända och ignorerade enheter",
+    "none": "Inga.",
+    "deviceLine": "IP __ip__, nät __network__, vid __where__, senast __last__",
+    "state": {
+      "approved": "Godkänd",
+      "ignored": "Ignoreras"
+    },
+    "action": {
+      "approve": "Godkänn",
+      "ignore": "Ignorera",
+      "unapprove": "Ta bort godkännande",
+      "forget": "Glöm",
+      "add": "Lägg till"
+    },
+    "senders": "Tillåtna avsändare",
+    "sendersHelp": "IPv4-adresser som får skicka loggar, separerade med komma (högst 5). Avsändare som setts nyligen listas nedan.",
+    "senderLine": "__ip__: __count__ paket, senast __last__ (__state__)",
+    "allowed": "tillåten",
+    "blocked": "blockerad",
+    "networks": "Larmnivå per nät",
+    "networksHelp": "Tyst = enheter listas men larmar aldrig, till exempel ett gästnät.",
+    "defaultLevel": "Alla andra nät",
+    "level": {
+      "default": "Som andra nät",
+      "NONE": "Tyst",
+      "INFO": "Info",
+      "WARNING": "Varning",
+      "HIGH": "Hög",
+      "CRITICAL": "Kritisk"
+    },
+    "saveConfig": "Spara avsändare och nivåer",
+    "pinTitle": "PIN (6-12 siffror)",
+    "oldPin": "Nuvarande PIN",
+    "newPin": "Ny PIN",
+    "savePin": "Spara PIN",
+    "error": "Kunde inte nå appen.",
+    "code": {
+      "done": "Klart.",
+      "wrong": "Fel PIN.",
+      "locked": "För många felaktiga försök. Låst i 15 minuter.",
+      "invalid": "Godtogs inte. Kontrollera värdena.",
+      "noPin": "Sätt en PIN först.",
+      "pinSaved": "PIN sparad.",
+      "unknown_device": "Enheten finns inte längre i listan.",
+      "error": "Appen nekade anropet eller gick inte att nå."
+    }
   }
 }

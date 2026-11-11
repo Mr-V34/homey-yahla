@@ -4,6 +4,76 @@
     "unapproved": "**Unapproved device** joined again: **__mac__** (IP __ip__, network __network__, at __where__)",
     "hop": "**Unapproved device changed network**: **__mac__** now on __network__ (IP __ip__, at __where__)",
     "full": "**Device list is full** of approved devices. New devices cannot be tracked: **__mac__**",
-    "socket": "**YAHLA cannot listen for logs** (__code__). No devices are being checked."
+    "socket": "**YAHLA cannot listen for logs** (__code__). No devices are being checked.",
+    "tamper": "**YAHLA setting changed from outside** (__key__). The change was undone. Check who has access to your Homey.",
+    "storeProblem": "**YAHLA could not read its saved __what__** (__problem__). It started with defaults.",
+    "pinSet": "**YAHLA PIN was set.**",
+    "pinChanged": "**YAHLA PIN was changed.**",
+    "configChanged": "**YAHLA settings were changed** (senders or network levels).",
+    "action": {
+      "approve": "**Device approved** in YAHLA: **__mac__**",
+      "ignore": "**Device ignored** in YAHLA: **__mac__**",
+      "unapprove": "**Approval removed** in YAHLA: **__mac__**",
+      "forget": "**Device forgotten** in YAHLA: **__mac__**"
+    }
+  },
+  "settings": {
+    "title": "YAHLA",
+    "intro": "Alerts when a device that you have not approved joins the network. Every change needs your PIN.",
+    "status": "Status",
+    "statusLine": "Listening: __listening__. Packets: __packets__, client events: __events__, unknown: __unknown__, forged: __bad__, from other senders: __foreign__. Devices: __fresh__ new, __approved__ approved, __ignored__ ignored.",
+    "yes": "yes",
+    "no": "no",
+    "warnNotListening": "YAHLA is not receiving logs.",
+    "warnNoPin": "Set a PIN first (bottom of the page).",
+    "warnNoSenders": "No sender set: logs from any address are accepted.",
+    "pinForChanges": "PIN for changes",
+    "newDevices": "New devices (not approved)",
+    "knownDevices": "Approved and ignored devices",
+    "none": "None.",
+    "deviceLine": "IP __ip__, network __network__, at __where__, last seen __last__",
+    "state": {
+      "approved": "Approved",
+      "ignored": "Ignored"
+    },
+    "action": {
+      "approve": "Approve",
+      "ignore": "Ignore",
+      "unapprove": "Remove approval",
+      "forget": "Forget",
+      "add": "Add"
+    },
+    "senders": "Allowed senders",
+    "sendersHelp": "IPv4 addresses that may send logs, separated by commas (at most 5). Senders seen lately are listed below.",
+    "senderLine": "__ip__: __count__ packets, last __last__ (__state__)",
+    "allowed": "allowed",
+    "blocked": "blocked",
+    "networks": "Alert level per network",
+    "networksHelp": "Silent = devices are listed but never alerted, for example a guest network.",
+    "defaultLevel": "All other networks",
+    "level": {
+      "default": "Like other networks",
+      "NONE": "Silent",
+      "INFO": "Info",
+      "WARNING": "Warning",
+      "HIGH": "High",
+      "CRITICAL": "Critical"
+    },
+    "saveConfig": "Save senders and levels",
+    "pinTitle": "PIN (6-12 digits)",
+    "oldPin": "Current PIN",
+    "newPin": "New PIN",
+    "savePin": "Save PIN",
+    "error": "Could not reach the app.",
+    "code": {
+      "done": "Done.",
+      "wrong": "Wrong PIN.",
+      "locked": "Too many wrong tries. Locked for 15 minutes.",
+      "invalid": "Not accepted. Check the values.",
+      "noPin": "Set a PIN first.",
+      "pinSaved": "PIN saved.",
+      "unknown_device": "That device is no longer in the list.",
+      "error": "The app refused the call or could not be reached."
+    }
   }
 }
