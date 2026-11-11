@@ -83,6 +83,7 @@
     "pinHelp": "With a PIN, the page asks for it when opened and stays unlocked for 15 minutes after it was last used. Without a PIN, anyone who can open this page can change it.",
     "removePin": "Remove PIN",
     "removePinConfirm": "Remove the PIN? Then anyone who can open this page can approve devices and change settings.",
+    "removePinAgain": "Press again within 10 seconds to remove the PIN",
     "logTitle": "Timeline",
     "logHelp": "How much YAHLA writes to the Homey timeline. Serious alarms and the daily report always come. Flows always get everything.",
     "log": {

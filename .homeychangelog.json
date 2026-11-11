@@ -6,5 +6,9 @@
   "0.1.1": {
     "en": "Alerts on your phone now start with the date and time. Device names that contain a colon are shown correctly.",
     "sv": "Larm i telefonen börjar nu med datum och klockslag. Enhetsnamn som innehåller kolon visas rätt."
+  },
+  "0.1.2": {
+    "en": "Removing the PIN on the settings page works again: press the button twice to confirm.",
+    "sv": "Att ta bort PIN på inställningssidan fungerar igen: tryck två gånger på knappen för att bekräfta."
   }
 }

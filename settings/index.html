@@ -330,13 +330,26 @@
         });
       });
 
+      // Two presses instead of Homey.confirm: on the real Homey the confirm
+      // callback never ran, so the PIN could not be removed. The second press
+      // must come within 10 seconds.
+      var removeArmed = null;
+      function disarmRemove() {
+        clearTimeout(removeArmed);
+        removeArmed = null;
+        $('removePin').textContent = t('removePin');
+      }
       $('removePin').addEventListener('click', function () {
-        Homey.confirm(t('removePinConfirm'), function (e, yes) {
-          if (!yes) return;
-          Homey.api('POST', '/pin/remove', { token: token }, function (err, r) {
-            show(err, r);
-            refresh();
-          });
+        if (!removeArmed) {
+          removeArmed = setTimeout(function () { disarmRemove(); $('result').textContent = ''; }, 10000);
+          $('removePin').textContent = t('removePinAgain');
+          $('result').textContent = t('removePinConfirm');
+          return;
+        }
+        disarmRemove();
+        Homey.api('POST', '/pin/remove', { token: token }, function (err, r) {
+          show(err, r);
+          refresh();
         });
       });
 

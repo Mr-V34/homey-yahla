@@ -83,6 +83,7 @@
     "pinHelp": "Med en PIN frågar sidan efter den när den öppnas och är sedan upplåst i 15 minuter efter att den senast användes. Utan PIN kan alla som kan öppna sidan ändra.",
     "removePin": "Ta bort PIN",
     "removePinConfirm": "Ta bort PIN? Då kan alla som kan öppna sidan godkänna enheter och ändra inställningar.",
+    "removePinAgain": "Tryck igen inom 10 sekunder för att ta bort PIN",
     "logTitle": "Tidslinje",
     "logHelp": "Hur mycket YAHLA skriver i Homeys tidslinje. Allvarliga larm och dagsrapporten kommer alltid. Flöden får alltid allt.",
     "log": {
