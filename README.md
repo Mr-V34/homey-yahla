@@ -3,7 +3,7 @@
 **Know when a stranger joins your network.**
 
 YAHLA (Yet Another Homey Log Analyser) is a Homey Pro app that listens to the network logs your
-router or access points already send. When a device that you have not approved joins the network,
+UniFi network already sends. When a device that you have not approved joins the network,
 YAHLA tells you in the Homey timeline and starts your Flows.
 
 The source is public so that anyone can see exactly what the app does with the data it receives.
