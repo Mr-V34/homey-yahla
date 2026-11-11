@@ -80,7 +80,7 @@
     "statusLast": "Senaste logg: __last__.",
     "unlockTitle": "Ange din PIN för att göra ändringar",
     "unlock": "Lås upp",
-    "pinHelp": "Med en PIN frågar sidan efter den när den öppnas och är sedan upplåst i 15 minuter efter senaste ändringen. Utan PIN kan alla som kan öppna sidan ändra.",
+    "pinHelp": "Med en PIN frågar sidan efter den när den öppnas och är sedan upplåst i 15 minuter efter att den senast användes. Utan PIN kan alla som kan öppna sidan ändra.",
     "removePin": "Ta bort PIN",
     "removePinConfirm": "Ta bort PIN? Då kan alla som kan öppna sidan godkänna enheter och ändra inställningar.",
     "logTitle": "Tidslinje",
@@ -89,6 +89,14 @@
       "minimum": "Minimum: nya enheter, kort",
       "extended": "Utökad: nya enheter med detaljer",
       "debug": "Felsökning: även dina ändringar, okända paket med mera"
+    },
+    "info": {
+      "mac": "MAC: __mac__",
+      "name": "Kallar sig: __name__",
+      "ip": "IP: __ip__",
+      "network": "Nät: __network__",
+      "where": "Vid: __where__",
+      "seen": "Först sedd __first__, senast sedd __last__"
     }
   },
   "alarm": {

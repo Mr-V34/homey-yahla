@@ -1,7 +1,7 @@
 {
   "name": "com.v34.yahla",
   "version": "0.1.0",
-  "description": "YAHLA: alerts on unknown devices from network logs",
+  "description": "YAHLA Network Guard: know when a stranger joins your network",
   "main": "app.js",
   "author": "Peter Persson (Mr-V34) <info@v34.com>",
   "private": true,
@@ -11,5 +11,6 @@
   "scripts": {
     "test": "node --test test/*.test.js"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "license": "MIT"
 }

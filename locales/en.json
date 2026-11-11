@@ -80,7 +80,7 @@
     "statusLast": "Last log: __last__.",
     "unlockTitle": "Enter your PIN to make changes",
     "unlock": "Unlock",
-    "pinHelp": "With a PIN, the page asks for it when opened and stays unlocked for 15 minutes after the last change. Without a PIN, anyone who can open this page can change it.",
+    "pinHelp": "With a PIN, the page asks for it when opened and stays unlocked for 15 minutes after it was last used. Without a PIN, anyone who can open this page can change it.",
     "removePin": "Remove PIN",
     "removePinConfirm": "Remove the PIN? Then anyone who can open this page can approve devices and change settings.",
     "logTitle": "Timeline",
@@ -89,6 +89,14 @@
       "minimum": "Minimum: new devices, short",
       "extended": "Extended: new devices with details",
       "debug": "Debug: also your changes, unknown packets and more"
+    },
+    "info": {
+      "mac": "MAC: __mac__",
+      "name": "Calls itself: __name__",
+      "ip": "IP: __ip__",
+      "network": "Network: __network__",
+      "where": "At: __where__",
+      "seen": "First seen __first__, last seen __last__"
     }
   },
   "alarm": {

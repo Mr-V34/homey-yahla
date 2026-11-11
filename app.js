@@ -301,25 +301,31 @@ class YahlaApp extends Homey.App {
     return useSession(this.sessions, token, Date.now());
   }
 
-  getStatus() {
-    return {
+  // Counts and lock state are always shown. Addresses (senders, settings,
+  // devices) only to an unlocked page when a PIN is set.
+  getStatus(body) {
+    const status = {
       listening: this.listening,
       counts: this.statusCounts(),
-      senders: [...this.rx.senders.entries()].map(([ip, x]) => ({
-        ip, count: x.count, last: x.last, allowed: x.allowed,
-      })),
       pinSet: Boolean(this.pinRecord),
       locked: pin.isLocked(this.pinGuard, Date.now()),
       lockedUntil: this.pinGuard.lockedUntil || 0,
       triesLeft: pin.MAX_FAILS - (this.pinGuard.fails || 0),
       silent: this.watch.silent,
       lastPacket: this.watch.lastPacket,
-      config: this.config,
+      unlocked: this.allowed((body || {}).token),
     };
+    if (!status.unlocked) return status;
+    status.senders = [...this.rx.senders.entries()].map(([ip, x]) => ({
+      ip, count: x.count, last: x.last, allowed: x.allowed,
+    }));
+    status.config = this.config;
+    return status;
   }
 
-  getDevices() {
-    return deviceList(this.store);
+  getDevices(body) {
+    if (!this.allowed((body || {}).token)) return { ok: false, code: 'needUnlock' };
+    return { ok: true, devices: deviceList(this.store) };
   }
 
   unlock(body) {

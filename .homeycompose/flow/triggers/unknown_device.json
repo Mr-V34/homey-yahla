@@ -85,8 +85,8 @@
       "name": "name",
       "type": "string",
       "title": {
-        "en": "Name (given by the device)",
-        "sv": "Namn (enhetens eget)"
+        "en": "Name given by the device",
+        "sv": "Enhetens eget namn"
       },
       "example": {
         "en": "phone",

@@ -9,6 +9,11 @@
     .warn { font-weight: 600; }
     .muted { opacity: .7; }
     button.small { padding: 4px 10px; }
+    details.dev { border-bottom: 1px solid rgba(128,128,128,.25); padding: 8px 0; }
+    details.dev summary { cursor: pointer; overflow-wrap: anywhere; }
+    details.dev summary small { opacity: .7; margin-left: 6px; }
+    details.dev .info { padding: 6px 0 4px 16px; }
+    details.dev .info div { overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
@@ -109,7 +114,8 @@
       }
       function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
       function setShown(node, shown) { node.style.display = shown ? '' : 'none'; }
-      function unlocked() { return Boolean(lastStatus && (!lastStatus.pinSet || token)); }
+      function unlocked() { return Boolean(lastStatus && lastStatus.unlocked); }
+      var openMacs = {}; // folds the owner has opened stay open across refreshes
 
       function show(err, r) {
         if (err) { $('result').textContent = t('code.error'); return; }
@@ -127,6 +133,18 @@
         });
       }
 
+      function addButtons(row, d, actions) {
+        actions.forEach(function (a) {
+          var b = el('button', t('action.' + a), 'homey-button-secondary small');
+          b.addEventListener('click', function () { act(d.mac, a); });
+          row.appendChild(b);
+        });
+      }
+
+      // The end of the MAC is always shown next to a name, since a device can
+      // give itself any name, also one that copies a trusted device.
+      function macTail(mac) { return '...' + mac.slice(-5); }
+
       function deviceRow(d, actions) {
         var row = el('div', null, 'row');
         var who = el('div', d.mac, 'who');
@@ -135,11 +153,7 @@
         })));
         if (d.state !== 'new') who.appendChild(el('small', t('state.' + d.state)));
         row.appendChild(who);
-        actions.forEach(function (a) {
-          var b = el('button', t('action.' + a), 'homey-button-secondary small');
-          b.addEventListener('click', function () { act(d.mac, a); });
-          row.appendChild(b);
-        });
+        addButtons(row, d, actions);
         return row;
       }
 
@@ -176,6 +190,32 @@
         });
       }
 
+      // Known devices fold up: the line shows the name, else the IP, else the MAC.
+      // A click shows MAC, network, place, times and the buttons.
+      function deviceFold(d, actions) {
+        var box = el('details', null, 'dev');
+        if (openMacs[d.mac]) box.open = true;
+        box.addEventListener('toggle', function () {
+          if (box.open) openMacs[d.mac] = true; else delete openMacs[d.mac];
+        });
+        var label = d.name || d.ip;
+        var sum = el('summary', label ? label + ' ' + macTail(d.mac) : d.mac);
+        sum.appendChild(el('small', t('state.' + d.state)));
+        box.appendChild(sum);
+        var info = el('div', null, 'info');
+        info.appendChild(el('div', t('info.mac', { mac: d.mac })));
+        info.appendChild(el('div', t('info.name', { name: d.name || '-' })));
+        info.appendChild(el('div', t('info.ip', { ip: d.ip || '-' })));
+        info.appendChild(el('div', t('info.network', { network: netLabel(d.network) })));
+        info.appendChild(el('div', t('info.where', { where: d.where || '-' })));
+        info.appendChild(el('div', t('info.seen', { first: when(d.firstSeen), last: when(d.lastSeen) })));
+        var row = el('div', null, 'row');
+        addButtons(row, d, actions);
+        info.appendChild(row);
+        box.appendChild(info);
+        return box;
+      }
+
       function renderDevices(list) {
         clear($('newList'));
         clear($('knownList'));
@@ -183,7 +223,7 @@
         list.forEach(function (d) {
           if (d.network) seen[d.network] = true;
           if (d.state === 'new') $('newList').appendChild(deviceRow(d, ['approve', 'ignore', 'forget']));
-          else $('knownList').appendChild(deviceRow(d, ['unapprove', 'forget']));
+          else $('knownList').appendChild(deviceFold(d, ['unapprove', 'forget']));
         });
         if (!$('newList').firstChild) $('newList').appendChild(el('p', t('none'), 'muted'));
         if (!$('knownList').firstChild) $('knownList').appendChild(el('p', t('none'), 'muted'));
@@ -217,7 +257,8 @@
 
       function renderStatus(s) {
         lastStatus = s;
-        config = s.config;
+        if (s.config) config = s.config;
+        if (s.pinSet && !s.unlocked) token = null; // session ended (idle or app restart)
         var c = s.counts;
         $('status').textContent = t('statusLine', {
           listening: t(s.listening ? 'yes' : 'no'),
@@ -230,24 +271,23 @@
         if (s.silent) w.push(t('warnSilent'));
         if (!s.pinSet) w.push(t('warnNoPin'));
         if (s.locked) w.push(t('code.locked', { until: when(s.lockedUntil) }));
-        if (!config.senders.length) w.push(t('warnNoSenders'));
+        if (s.unlocked && !config.senders.length) w.push(t('warnNoSenders'));
         $('warnings').textContent = w.join(' ');
-        if (!s.pinSet) token = null;
         // Visibility is set on the element itself: Homey's own styles for
         // fieldsets and buttons win over a CSS class.
         setShown($('unlockBox'), !unlocked());
         setShown($('content'), unlocked());
         setShown($('removePin'), s.pinSet);
-        renderSenders(s);
+        if (s.senders) renderSenders(s);
       }
 
       function refresh() {
-        Homey.api('GET', '/status', null, function (err, s) {
+        Homey.api('POST', '/status', { token: token }, function (err, s) {
           if (err) { $('status').textContent = t('error'); return; }
           renderStatus(s);
           if (!unlocked()) return;
-          Homey.api('GET', '/devices', null, function (err2, list) {
-            if (!err2) renderDevices(list);
+          Homey.api('POST', '/devices', { token: token }, function (err2, r) {
+            if (!err2 && r.ok) renderDevices(r.devices);
           });
         });
       }

@@ -5,12 +5,13 @@
 // change needs a session token from /unlock.
 
 module.exports = {
-  async getStatus({ homey }) {
-    return homey.app.getStatus();
+  // POST so the session token travels in the body, not in a URL.
+  async getStatus({ homey, body }) {
+    return homey.app.getStatus(body);
   },
 
-  async getDevices({ homey }) {
-    return homey.app.getDevices();
+  async getDevices({ homey, body }) {
+    return homey.app.getDevices(body);
   },
 
   async unlock({ homey, body }) {

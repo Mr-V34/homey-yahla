@@ -8,12 +8,12 @@
     "local"
   ],
   "name": {
-    "en": "YAHLA",
-    "sv": "YAHLA"
+    "en": "YAHLA Network Guard",
+    "sv": "YAHLA Network Guard"
   },
   "description": {
-    "en": "Get an alert when an unknown device joins your network.",
-    "sv": "Få ett larm när en okänd enhet ansluter till ditt nätverk."
+    "en": "Know when a stranger joins your network",
+    "sv": "Vet när en främling ansluter till ditt nätverk"
   },
   "category": [
     "security"
@@ -33,11 +33,11 @@
   },
   "api": {
     "getStatus": {
-      "method": "GET",
+      "method": "POST",
       "path": "/status"
     },
     "getDevices": {
-      "method": "GET",
+      "method": "POST",
       "path": "/devices"
     },
     "unlock": {
@@ -229,8 +229,8 @@
             "name": "name",
             "type": "string",
             "title": {
-              "en": "Name (given by the device)",
-              "sv": "Namn (enhetens eget)"
+              "en": "Name given by the device",
+              "sv": "Enhetens eget namn"
             },
             "example": {
               "en": "phone",

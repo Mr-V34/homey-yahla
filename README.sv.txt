@@ -1,0 +1,3 @@
+YAHLA håller koll på ditt hemnätverk. Appen läser loggarna som din router eller dina accesspunkter redan skickar, och säger till direkt när en enhet som du inte har godkänt ansluter: en ny mobil, en okänd dator på gästnätet eller något som kopplats in i ett ledigt nätverksuttag. Godkänn dina kända enheter en gång, sedan larmar bara främlingar.
+
+YAHLA arbetar helt i din Homey, utan moln och utan extra behörigheter. Dina godkännanden skyddas av en PIN, och YAHLA säger till när något är fel med den själv: när loggarna slutar komma, när någon översvämmar den med falska händelser eller när dess inställningar ändras bakom dess rygg. Larmen kommer i tidslinjen och i dina flöden, så du bestämmer om en främling ska tända lamporna, skicka ett pushmeddelande eller starta larmet.
