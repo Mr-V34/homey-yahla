@@ -109,3 +109,8 @@ test('report tokens are plain strings with counts only', () => {
   assert.strictEqual(tok.lastPacket, '5');
   assert.strictEqual(tok.sendersSet, 'nej');
 });
+
+test('local time text for alerts', () => {
+  assert.strictEqual(w8.formatLocal(Date.UTC(2026, 0, 15, 6, 5), 'Europe/Stockholm'), '2026-01-15 07:05');
+  assert.strictEqual(w8.formatLocal(undefined, 'UTC'), '-');
+});

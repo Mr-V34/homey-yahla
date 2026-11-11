@@ -1,18 +1,19 @@
 {
   "alert": {
-    "new": "**Okänd enhet** på nätverket: **__mac__** (kallar sig __name__, IP __ip__, nät __network__, vid __where__)",
-    "unapproved": "**Ej godkänd enhet** anslöt igen: **__mac__** (kallar sig __name__, IP __ip__, nät __network__, vid __where__)",
-    "hop": "**Ej godkänd enhet bytte nät**: **__mac__** (kallar sig __name__) nu på __network__ (IP __ip__, vid __where__)",
+    "new": "**Okänd enhet** på nätverket: **__mac__**\nKallar sig: __name__\nIP __ip__, nät __network__, vid __where__\nFörst sedd: __first__",
+    "unapproved": "**Ej godkänd enhet** anslöt igen: **__mac__**\nKallar sig: __name__\nIP __ip__, nät __network__, vid __where__\nFörst sedd: __first__",
+    "hop": "**Ej godkänd enhet bytte nät**: **__mac__**\nKallar sig: __name__\nNu på __network__, IP __ip__, vid __where__\nFörst sedd: __first__",
     "full": "**Enhetslistan är full** av godkända enheter. Nya enheter kan inte följas: **__mac__**",
     "pinSet": "**YAHLA-PIN har satts.**",
     "pinChanged": "**YAHLA-PIN har ändrats.**",
-    "configChanged": "**YAHLA-inställningar ändrades** (avsändare eller larmnivåer).",
+    "configChanged": "YAHLA: inställningar sparade.",
     "action": {
       "approve": "**Enhet godkänd** i YAHLA: **__mac__**",
       "ignore": "**Enhet ignoreras** i YAHLA: **__mac__**",
       "unapprove": "**Godkännande borttaget** i YAHLA: **__mac__**",
       "forget": "**Enhet glömd** i YAHLA: **__mac__**"
-    }
+    },
+    "pinRemoved": "**YAHLA-PIN togs bort.** Alla som kan öppna inställningssidan kan nu göra ändringar."
   },
   "settings": {
     "title": "YAHLA",
@@ -22,9 +23,8 @@
     "yes": "ja",
     "no": "nej",
     "warnNotListening": "YAHLA tar inte emot loggar.",
-    "warnNoPin": "Sätt en PIN först (längst ner på sidan).",
+    "warnNoPin": "Ingen PIN: alla som kan öppna sidan kan göra ändringar. Sätt en PIN längst ner på sidan.",
     "warnNoSenders": "Ingen avsändare angiven: loggar från alla adresser tas emot.",
-    "pinForChanges": "PIN för ändringar",
     "newDevices": "Nya enheter (ej godkända)",
     "knownDevices": "Godkända och ignorerade enheter",
     "none": "Inga.",
@@ -56,9 +56,8 @@
       "HIGH": "Hög",
       "CRITICAL": "Kritisk"
     },
-    "saveConfig": "Spara avsändare och nivåer",
+    "saveConfig": "Spara inställningar",
     "pinTitle": "PIN (6-12 siffror)",
-    "oldPin": "Nuvarande PIN",
     "newPin": "Ny PIN",
     "savePin": "Spara PIN",
     "error": "Kunde inte nå appen.",
@@ -70,10 +69,27 @@
       "noPin": "Sätt en PIN först.",
       "pinSaved": "PIN sparad.",
       "unknown_device": "Enheten finns inte längre i listan.",
-      "error": "Appen nekade anropet eller gick inte att nå."
+      "error": "Appen nekade anropet eller gick inte att nå.",
+      "needUnlock": "Sidan är låst igen. Ange din PIN.",
+      "open": "Ingen PIN är satt.",
+      "unlocked": "Upplåst.",
+      "pinRemoved": "PIN borttagen. Alla som kan öppna sidan kan nu göra ändringar.",
+      "saved": "Sparat."
     },
     "warnSilent": "Inga loggar har kommit på 30 minuter eller mer.",
-    "statusLast": "Senaste logg: __last__."
+    "statusLast": "Senaste logg: __last__.",
+    "unlockTitle": "Ange din PIN för att göra ändringar",
+    "unlock": "Lås upp",
+    "pinHelp": "Med en PIN frågar sidan efter den när den öppnas och är sedan upplåst i 15 minuter efter senaste ändringen. Utan PIN kan alla som kan öppna sidan ändra.",
+    "removePin": "Ta bort PIN",
+    "removePinConfirm": "Ta bort PIN? Då kan alla som kan öppna sidan godkänna enheter och ändra inställningar.",
+    "logTitle": "Tidslinje",
+    "logHelp": "Hur mycket YAHLA skriver i Homeys tidslinje. Allvarliga larm och dagsrapporten kommer alltid. Flöden får alltid allt.",
+    "log": {
+      "minimum": "Minimum: nya enheter, kort",
+      "extended": "Utökad: nya enheter med detaljer",
+      "debug": "Felsökning: även dina ändringar, okända paket med mera"
+    }
   },
   "alarm": {
     "silence": "**YAHLA har inte fått några loggar på __minutes__ minuter.** Kontrollera loggavsändaren och nätverket. Inga enheter kontrolleras.",
@@ -91,5 +107,10 @@
     "no": "nej",
     "never": "aldrig",
     "text": "**YAHLA dagsrapport __date__**\nLyssnar: __listening__, senaste logg för __lastPacket__ min sedan\nPaket: __packets__ (godtagna __accepted__, andra avsändare __foreign__, kastade __dropped__)\nKlienthändelser: __events__ (med namn: __named__), nya enheter: __newDevices__\nEnhetslarm: __alerts__ skickade, __suppressed__ återhållna\nOkänt format: __unknown__, förfalskade: __forged__, systemlarm: __alarms__\nEnheter: __fresh__ nya, __approved__ godkända, __ignored__ ignorerade\nPIN satt: __pinSet__, avsändare angivna: __sendersSet__"
+  },
+  "alertShort": {
+    "new": "**Okänd enhet**: **__mac__** (__name__)",
+    "unapproved": "**Ej godkänd enhet** igen: **__mac__** (__name__)",
+    "hop": "**Ej godkänd enhet bytte nät**: **__mac__** (__name__)"
   }
 }

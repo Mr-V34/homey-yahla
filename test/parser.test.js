@@ -82,3 +82,11 @@ test('device name: alias first, else hostname, always a plain label', () => {
   assert.strictEqual(parseText(host, AT).event.name, '?b?evil??b?');
   assert.strictEqual(parseText(f.WIFI_JOIN, AT).event.name, null);
 });
+
+test('a long name is cut to 48 characters with no space at the end', () => {
+  const long = f.cef('WiFi Client Connected', 'UNIFIclientMac=02:00:00:00:00:0f UNIFIclientHostname=Example-Personal-Weather-Station-With-A-Long Name Here');
+  const name = parseText(long, AT).event.name;
+  assert.ok(name.length <= 48);
+  assert.strictEqual(name, name.trim());
+  assert.strictEqual(safeLabel('abc ' + 'd'.repeat(10), 4), 'abc');
+});

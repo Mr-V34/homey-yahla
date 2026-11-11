@@ -1,18 +1,19 @@
 {
   "alert": {
-    "new": "**Unknown device** on the network: **__mac__** (calls itself __name__, IP __ip__, network __network__, at __where__)",
-    "unapproved": "**Unapproved device** joined again: **__mac__** (calls itself __name__, IP __ip__, network __network__, at __where__)",
-    "hop": "**Unapproved device changed network**: **__mac__** (calls itself __name__) now on __network__ (IP __ip__, at __where__)",
+    "new": "**Unknown device** on the network: **__mac__**\nCalls itself: __name__\nIP __ip__, network __network__, at __where__\nFirst seen: __first__",
+    "unapproved": "**Unapproved device** joined again: **__mac__**\nCalls itself: __name__\nIP __ip__, network __network__, at __where__\nFirst seen: __first__",
+    "hop": "**Unapproved device changed network**: **__mac__**\nCalls itself: __name__\nNow on __network__, IP __ip__, at __where__\nFirst seen: __first__",
     "full": "**Device list is full** of approved devices. New devices cannot be tracked: **__mac__**",
     "pinSet": "**YAHLA PIN was set.**",
     "pinChanged": "**YAHLA PIN was changed.**",
-    "configChanged": "**YAHLA settings were changed** (senders or network levels).",
+    "configChanged": "YAHLA: settings saved.",
     "action": {
       "approve": "**Device approved** in YAHLA: **__mac__**",
       "ignore": "**Device ignored** in YAHLA: **__mac__**",
       "unapprove": "**Approval removed** in YAHLA: **__mac__**",
       "forget": "**Device forgotten** in YAHLA: **__mac__**"
-    }
+    },
+    "pinRemoved": "**YAHLA PIN was removed.** Anyone who can open the settings page can now make changes."
   },
   "settings": {
     "title": "YAHLA",
@@ -22,9 +23,8 @@
     "yes": "yes",
     "no": "no",
     "warnNotListening": "YAHLA is not receiving logs.",
-    "warnNoPin": "Set a PIN first (bottom of the page).",
+    "warnNoPin": "No PIN: anyone who can open this page can make changes. Set a PIN at the bottom of the page.",
     "warnNoSenders": "No sender set: logs from any address are accepted.",
-    "pinForChanges": "PIN for changes",
     "newDevices": "New devices (not approved)",
     "knownDevices": "Approved and ignored devices",
     "none": "None.",
@@ -56,9 +56,8 @@
       "HIGH": "High",
       "CRITICAL": "Critical"
     },
-    "saveConfig": "Save senders and levels",
+    "saveConfig": "Save settings",
     "pinTitle": "PIN (6-12 digits)",
-    "oldPin": "Current PIN",
     "newPin": "New PIN",
     "savePin": "Save PIN",
     "error": "Could not reach the app.",
@@ -70,10 +69,27 @@
       "noPin": "Set a PIN first.",
       "pinSaved": "PIN saved.",
       "unknown_device": "That device is no longer in the list.",
-      "error": "The app refused the call or could not be reached."
+      "error": "The app refused the call or could not be reached.",
+      "needUnlock": "The page is locked again. Enter your PIN.",
+      "open": "No PIN is set.",
+      "unlocked": "Unlocked.",
+      "pinRemoved": "PIN removed. Anyone who can open this page can now make changes.",
+      "saved": "Saved."
     },
     "warnSilent": "No logs received for 30 minutes or more.",
-    "statusLast": "Last log: __last__."
+    "statusLast": "Last log: __last__.",
+    "unlockTitle": "Enter your PIN to make changes",
+    "unlock": "Unlock",
+    "pinHelp": "With a PIN, the page asks for it when opened and stays unlocked for 15 minutes after the last change. Without a PIN, anyone who can open this page can change it.",
+    "removePin": "Remove PIN",
+    "removePinConfirm": "Remove the PIN? Then anyone who can open this page can approve devices and change settings.",
+    "logTitle": "Timeline",
+    "logHelp": "How much YAHLA writes to the Homey timeline. Serious alarms and the daily report always come. Flows always get everything.",
+    "log": {
+      "minimum": "Minimum: new devices, short",
+      "extended": "Extended: new devices with details",
+      "debug": "Debug: also your changes, unknown packets and more"
+    }
   },
   "alarm": {
     "silence": "**YAHLA has received no logs for __minutes__ minutes.** Check the log sender and the network. Devices are not being checked.",
@@ -91,5 +107,10 @@
     "no": "no",
     "never": "never",
     "text": "**YAHLA daily report __date__**\nListening: __listening__, last log __lastPacket__ min ago\nPackets: __packets__ (accepted __accepted__, other senders __foreign__, dropped __dropped__)\nClient events: __events__ (with a name: __named__), new devices: __newDevices__\nDevice alerts: __alerts__ sent, __suppressed__ held back\nUnknown format: __unknown__, forged: __forged__, system alarms: __alarms__\nDevices: __fresh__ new, __approved__ approved, __ignored__ ignored\nPIN set: __pinSet__, senders set: __sendersSet__"
+  },
+  "alertShort": {
+    "new": "**Unknown device**: **__mac__** (__name__)",
+    "unapproved": "**Unapproved device** again: **__mac__** (__name__)",
+    "hop": "**Unapproved device changed network**: **__mac__** (__name__)"
   }
 }

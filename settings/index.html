@@ -23,52 +23,64 @@
     <p id="warnings" class="warn"></p>
   </fieldset>
 
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend" data-i18n="settings.pinForChanges"></legend>
+  <fieldset class="homey-form-fieldset" id="unlockBox" style="display: none">
+    <legend class="homey-form-legend" data-i18n="settings.unlockTitle"></legend>
     <div class="homey-form-group">
-      <input class="homey-form-input" id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" />
+      <input class="homey-form-input" id="unlockPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" />
     </div>
-    <p id="result"></p>
+    <button id="unlock" class="homey-button-primary-full" data-i18n="settings.unlock"></button>
   </fieldset>
 
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend" data-i18n="settings.newDevices"></legend>
-    <div id="newList"></div>
-  </fieldset>
+  <p id="result" class="warn"></p>
 
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend" data-i18n="settings.knownDevices"></legend>
-    <div id="knownList"></div>
-  </fieldset>
+  <div id="content" style="display: none">
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" data-i18n="settings.newDevices"></legend>
+      <div id="newList"></div>
+    </fieldset>
 
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend" data-i18n="settings.senders"></legend>
-    <p class="muted" data-i18n="settings.sendersHelp"></p>
-    <div class="homey-form-group">
-      <input class="homey-form-input" id="senders" type="text" autocomplete="off" maxlength="100" />
-    </div>
-    <div id="seenSenders"></div>
-  </fieldset>
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" data-i18n="settings.knownDevices"></legend>
+      <div id="knownList"></div>
+    </fieldset>
 
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend" data-i18n="settings.networks"></legend>
-    <p class="muted" data-i18n="settings.networksHelp"></p>
-    <div id="networkList"></div>
-    <button id="saveConfig" class="homey-button-primary-full" data-i18n="settings.saveConfig"></button>
-  </fieldset>
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" data-i18n="settings.senders"></legend>
+      <p class="muted" data-i18n="settings.sendersHelp"></p>
+      <div class="homey-form-group">
+        <input class="homey-form-input" id="senders" type="text" autocomplete="off" maxlength="100" />
+      </div>
+      <div id="seenSenders"></div>
+    </fieldset>
 
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend" data-i18n="settings.pinTitle"></legend>
-    <div class="homey-form-group" id="oldPinGroup">
-      <label class="homey-form-label" for="oldPin" data-i18n="settings.oldPin"></label>
-      <input class="homey-form-input" id="oldPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" />
-    </div>
-    <div class="homey-form-group">
-      <label class="homey-form-label" for="newPin" data-i18n="settings.newPin"></label>
-      <input class="homey-form-input" id="newPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" />
-    </div>
-    <button id="savePin" class="homey-button-secondary-full" data-i18n="settings.savePin"></button>
-  </fieldset>
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" data-i18n="settings.logTitle"></legend>
+      <p class="muted" data-i18n="settings.logHelp"></p>
+      <select class="homey-form-select" id="logLevel">
+        <option value="minimum" data-i18n="settings.log.minimum"></option>
+        <option value="extended" data-i18n="settings.log.extended"></option>
+        <option value="debug" data-i18n="settings.log.debug"></option>
+      </select>
+    </fieldset>
+
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" data-i18n="settings.networks"></legend>
+      <p class="muted" data-i18n="settings.networksHelp"></p>
+      <div id="networkList"></div>
+      <button id="saveConfig" class="homey-button-primary-full" data-i18n="settings.saveConfig"></button>
+    </fieldset>
+
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" data-i18n="settings.pinTitle"></legend>
+      <p class="muted" data-i18n="settings.pinHelp"></p>
+      <div class="homey-form-group">
+        <label class="homey-form-label" for="newPin" data-i18n="settings.newPin"></label>
+        <input class="homey-form-input" id="newPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" />
+      </div>
+      <button id="savePin" class="homey-button-secondary-full" data-i18n="settings.savePin"></button>
+      <button id="removePin" class="homey-button-secondary-full" style="display: none" data-i18n="settings.removePin"></button>
+    </fieldset>
+  </div>
 
   <script type="text/javascript">
     function onHomeyReady(Homey) {
@@ -76,6 +88,10 @@
       var $ = function (id) { return document.getElementById(id); };
       var config = null;
       var networks = [];
+      var token = null;        // session from /unlock; kept in this page only
+      var lastStatus = null;
+      var formLoaded = false;  // senders and levels are filled once and after a save,
+                               // so a refresh never overwrites what the owner is typing
 
       // Everything from the app is shown as text, never as HTML.
       function el(tag, text, cls) {
@@ -85,16 +101,6 @@
         return e;
       }
       function t(key, tokens) { return Homey.__('settings.' + key, tokens) || key; }
-      var lastStatus = null;
-      var formLoaded = false; // the senders and levels form is filled once, and again after a save,
-                              // so a refresh never overwrites what the owner is typing
-      function show(err, r) {
-        if (err) { $('result').textContent = t('code.error'); return; }
-        $('result').textContent = t('code.' + r.code, {
-          left: String(r.triesLeft !== undefined ? r.triesLeft : ''),
-          until: lastStatus ? when(lastStatus.lockedUntil) : '-',
-        });
-      }
       function when(ms) { return ms ? new Date(ms).toLocaleString() : '-'; }
       function netLabel(key) {
         if (!key) return '-';
@@ -102,9 +108,20 @@
         return key.slice(5);
       }
       function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+      function setShown(node, shown) { node.style.display = shown ? '' : 'none'; }
+      function unlocked() { return Boolean(lastStatus && (!lastStatus.pinSet || token)); }
+
+      function show(err, r) {
+        if (err) { $('result').textContent = t('code.error'); return; }
+        if (r.code === 'needUnlock') token = null;
+        $('result').textContent = r.code === 'done' ? '' : t('code.' + r.code, {
+          left: String(r.triesLeft !== undefined ? r.triesLeft : ''),
+          until: lastStatus ? when(lastStatus.lockedUntil) : '-',
+        });
+      }
 
       function act(mac, action) {
-        Homey.api('POST', '/device', { pin: $('pin').value, mac: mac, action: action }, function (err, r) {
+        Homey.api('POST', '/device', { token: token, mac: mac, action: action }, function (err, r) {
           show(err, r);
           refresh();
         });
@@ -124,25 +141,6 @@
           row.appendChild(b);
         });
         return row;
-      }
-
-      function renderDevices(list) {
-        clear($('newList'));
-        clear($('knownList'));
-        var seen = {};
-        list.forEach(function (d) {
-          if (d.network) seen[d.network] = true;
-          if (d.state === 'new') $('newList').appendChild(deviceRow(d, ['approve', 'ignore', 'forget']));
-          else $('knownList').appendChild(deviceRow(d, ['unapprove', 'forget']));
-        });
-        if (!$('newList').firstChild) $('newList').appendChild(el('p', t('none'), 'muted'));
-        if (!$('knownList').firstChild) $('knownList').appendChild(el('p', t('none'), 'muted'));
-        if (formLoaded) return;
-        Object.keys(config.severity).forEach(function (k) { seen[k] = true; });
-        networks = Object.keys(seen).sort();
-        renderNetworks();
-        $('senders').value = config.senders.join(', ');
-        formLoaded = true;
       }
 
       function levelSelect(id, value, withNone) {
@@ -178,24 +176,27 @@
         });
       }
 
-      function renderStatus(s) {
-        lastStatus = s;
-        config = s.config;
-        var c = s.counts;
-        $('status').textContent = t('statusLine', {
-          listening: t(s.listening ? 'yes' : 'no'),
-          packets: String(c.packets), events: String(c.events), unknown: String(c.unknown),
-          bad: String(c.bad), foreign: String(c.foreign), fresh: String(c.new),
-          approved: String(c.approved), ignored: String(c.ignored),
-        }) + ' ' + t('statusLast', { last: when(s.lastPacket) });
-        var w = [];
-        if (!s.listening) w.push(t('warnNotListening'));
-        if (!s.pinSet) w.push(t('warnNoPin'));
-        if (s.silent) w.push(t('warnSilent'));
-        if (s.locked) w.push(t('code.locked', { until: when(s.lockedUntil) }));
-        if (!config.senders.length) w.push(t('warnNoSenders'));
-        $('warnings').textContent = w.join(' ');
-        $('oldPinGroup').style.display = s.pinSet ? '' : 'none';
+      function renderDevices(list) {
+        clear($('newList'));
+        clear($('knownList'));
+        var seen = {};
+        list.forEach(function (d) {
+          if (d.network) seen[d.network] = true;
+          if (d.state === 'new') $('newList').appendChild(deviceRow(d, ['approve', 'ignore', 'forget']));
+          else $('knownList').appendChild(deviceRow(d, ['unapprove', 'forget']));
+        });
+        if (!$('newList').firstChild) $('newList').appendChild(el('p', t('none'), 'muted'));
+        if (!$('knownList').firstChild) $('knownList').appendChild(el('p', t('none'), 'muted'));
+        if (formLoaded) return;
+        Object.keys(config.severity).forEach(function (k) { seen[k] = true; });
+        networks = Object.keys(seen).sort();
+        renderNetworks();
+        $('senders').value = config.senders.join(', ');
+        $('logLevel').value = config.logLevel;
+        formLoaded = true;
+      }
+
+      function renderSenders(s) {
         var box = $('seenSenders');
         clear(box);
         s.senders.forEach(function (x) {
@@ -214,15 +215,52 @@
         });
       }
 
+      function renderStatus(s) {
+        lastStatus = s;
+        config = s.config;
+        var c = s.counts;
+        $('status').textContent = t('statusLine', {
+          listening: t(s.listening ? 'yes' : 'no'),
+          packets: String(c.packets), events: String(c.events), unknown: String(c.unknown),
+          bad: String(c.bad), foreign: String(c.foreign), fresh: String(c.new),
+          approved: String(c.approved), ignored: String(c.ignored),
+        }) + ' ' + t('statusLast', { last: when(s.lastPacket) });
+        var w = [];
+        if (!s.listening) w.push(t('warnNotListening'));
+        if (s.silent) w.push(t('warnSilent'));
+        if (!s.pinSet) w.push(t('warnNoPin'));
+        if (s.locked) w.push(t('code.locked', { until: when(s.lockedUntil) }));
+        if (!config.senders.length) w.push(t('warnNoSenders'));
+        $('warnings').textContent = w.join(' ');
+        if (!s.pinSet) token = null;
+        // Visibility is set on the element itself: Homey's own styles for
+        // fieldsets and buttons win over a CSS class.
+        setShown($('unlockBox'), !unlocked());
+        setShown($('content'), unlocked());
+        setShown($('removePin'), s.pinSet);
+        renderSenders(s);
+      }
+
       function refresh() {
         Homey.api('GET', '/status', null, function (err, s) {
           if (err) { $('status').textContent = t('error'); return; }
           renderStatus(s);
+          if (!unlocked()) return;
           Homey.api('GET', '/devices', null, function (err2, list) {
             if (!err2) renderDevices(list);
           });
         });
       }
+
+      $('unlock').addEventListener('click', function () {
+        Homey.api('POST', '/unlock', { pin: $('unlockPin').value }, function (err, r) {
+          $('unlockPin').value = '';
+          if (!err && r.ok && r.token) token = r.token;
+          show(err, r);
+          if (!err && r.ok) $('result').textContent = '';
+          refresh();
+        });
+      });
 
       $('saveConfig').addEventListener('click', function () {
         var severity = {};
@@ -234,22 +272,36 @@
           senders: $('senders').value.split(/[\s,]+/).filter(Boolean),
           severity: severity,
           defaultSeverity: $('level-default').value,
+          logLevel: $('logLevel').value,
         };
-        Homey.api('POST', '/config', { pin: $('pin').value, config: next }, function (err, r) {
+        Homey.api('POST', '/config', { token: token, config: next }, function (err, r) {
           show(err, r);
-          if (!err && r.ok) formLoaded = false; // show what was saved
+          if (!err && r.ok) { formLoaded = false; $('result').textContent = t('code.saved'); }
           refresh();
         });
       });
 
       $('savePin').addEventListener('click', function () {
-        Homey.api('POST', '/pin', { newPin: $('newPin').value, oldPin: $('oldPin').value }, function (err, r) {
+        Homey.api('POST', '/pin', { token: token, newPin: $('newPin').value }, function (err, r) {
           $('newPin').value = '';
-          $('oldPin').value = '';
+          if (!err && r.ok && r.token) token = r.token;
           show(err, r);
           refresh();
         });
       });
+
+      $('removePin').addEventListener('click', function () {
+        Homey.confirm(t('removePinConfirm'), function (e, yes) {
+          if (!yes) return;
+          Homey.api('POST', '/pin/remove', { token: token }, function (err, r) {
+            show(err, r);
+            refresh();
+          });
+        });
+      });
+
+      // Option texts are set here, not with data-i18n, to be sure they are translated.
+      Array.prototype.forEach.call($('logLevel').options, function (o) { o.textContent = t('log.' + o.value); });
 
       refresh();
       Homey.ready();

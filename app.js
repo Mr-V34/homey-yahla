@@ -10,6 +10,7 @@ const { loadConfig, checkConfig } = require('./lib/config');
 const { applyDeviceAction, deviceList } = require('./lib/admin');
 const { createGuard, remember, isTampered } = require('./lib/guard');
 const pin = require('./lib/pin');
+const { createSessions, openSession, useSession } = require('./lib/session');
 const watch = require('./lib/watch');
 const { reportTokens } = require('./lib/report');
 
@@ -23,14 +24,17 @@ const SAVE_MS = 60 * 1000;
 const TAMPER_NOTE_MS = 60 * 1000;
 const REPORT_HOUR = 7; // local time of the daily report
 const REPORT_KEY = 'report';
+// Timeline levels. 'always' ignores the owner's log level: serious alarms and
+// the daily report must never be hidden (fail loud).
+const LOG_RANK = { minimum: 1, extended: 2, debug: 3 };
+const ALARM_LEVEL = {
+  silence: 'always', tamper: 'always', socket: 'always', flood: 'always', storeProblem: 'always',
+  forged: 'extended', unknown: 'debug', resumed: 'debug',
+};
 const KEYS = {
   devices: 'devices', config: 'config', pin: 'pin', pinGuard: 'pinGuard', stats: 'stats',
 };
 const GUARDED = [KEYS.devices, KEYS.config, KEYS.pin, KEYS.pinGuard];
-
-function validPinRecord(r) {
-  return r && typeof r === 'object' && r.v === 1 && typeof r.salt === 'string' && typeof r.hash === 'string';
-}
 
 class YahlaApp extends Homey.App {
 
@@ -41,7 +45,7 @@ class YahlaApp extends Homey.App {
     this.store = loaded.store;
     const conf = loadConfig(s.get(KEYS.config));
     this.config = conf.config;
-    this.pinRecord = validPinRecord(s.get(KEYS.pin)) ? s.get(KEYS.pin) : null;
+    this.pinRecord = pin.validRecord(s.get(KEYS.pin)) ? s.get(KEYS.pin) : null;
     const g = s.get(KEYS.pinGuard);
     this.pinGuard = g && Number.isFinite(g.fails) && Number.isFinite(g.lockedUntil) ? g : { fails: 0, lockedUntil: 0 };
     for (const [what, problem] of [['device list', loaded.problem], ['settings', conf.problem]]) {
@@ -64,6 +68,7 @@ class YahlaApp extends Homey.App {
 
     this.dirty = false;
     this.pinQueue = Promise.resolve();
+    this.sessions = createSessions();
     this.rx = createReceiver();
     this.trigger = this.homey.flow.getTriggerCard('unknown_device');
     this.alarmTrigger = this.homey.flow.getTriggerCard('system_alarm');
@@ -124,8 +129,8 @@ class YahlaApp extends Homey.App {
 
   sendAlert(alert) {
     this.log(`alert ${alert.type} ${alert.severity}`);
-    const n = notificationFor(alert);
-    this.notify(n.key, n.tokens);
+    const n = notificationFor(alert, this.config.logLevel, (ms) => this.formatTime(ms));
+    this.notify(n.key, n.tokens, 'minimum');
     this.trigger.trigger(tokensFor(alert))
       .catch((err) => this.error(`trigger failed: ${err.message}`));
   }
@@ -135,13 +140,27 @@ class YahlaApp extends Homey.App {
     const key = a.kind === 'flood' && a.data.capped ? 'alarm.floodCap' : `alarm.${a.kind}`;
     const text = this.homey.__(key, a.data);
     this.log(`alarm ${a.kind} ${a.severity}`);
-    this.homey.notifications.createNotification({ excerpt: text })
-      .catch((err) => this.error(`notification failed: ${err.message}`));
+    if (this.shows(ALARM_LEVEL[a.kind] || 'always')) {
+      this.homey.notifications.createNotification({ excerpt: text })
+        .catch((err) => this.error(`notification failed: ${err.message}`));
+    }
     this.alarmTrigger.trigger({ kind: a.kind, severity: a.severity, message: text.replace(/\*\*/g, '') })
       .catch((err) => this.error(`trigger failed: ${err.message}`));
   }
 
-  notify(key, tokens) {
+  // Does the owner's log level let this go to the timeline?
+  shows(level) {
+    if (level === 'always') return true;
+    const own = (this.config && LOG_RANK[this.config.logLevel]) || LOG_RANK.extended;
+    return own >= LOG_RANK[level];
+  }
+
+  formatTime(ms) {
+    return watch.formatLocal(ms, this.homey.clock.getTimezone());
+  }
+
+  notify(key, tokens, level) {
+    if (!this.shows(level)) return;
     this.homey.notifications.createNotification({ excerpt: this.homey.__(key, tokens) })
       .catch((err) => this.error(`notification failed: ${err.message}`));
   }
@@ -243,6 +262,8 @@ class YahlaApp extends Homey.App {
   }
 
   // ── Owner actions (Web API, settings page) ──────────────────────────────────
+  // With a PIN set, the page unlocks once with the PIN and then uses a session
+  // token for changes. Without a PIN, changes need nothing (the page warns).
 
   // One PIN check at a time, so parallel calls cannot slip past the lock.
   serial(fn) {
@@ -258,12 +279,26 @@ class YahlaApp extends Homey.App {
     const ok = await pin.pinMatches(this.pinRecord, given);
     this.pinGuard = pin.afterTry(this.pinGuard, ok, now);
     this.writeGuarded(KEYS.pinGuard, this.pinGuard);
-    if (!ok) this.log('wrong PIN');
-    return ok ? 'ok' : 'wrong';
+    if (!ok) {
+      this.log('wrong PIN');
+      return 'wrong';
+    }
+    if (pin.needsRehash(this.pinRecord)) {
+      this.pinRecord = await pin.hashPin(given);
+      this.writeGuarded(KEYS.pin, this.pinRecord);
+      this.log('PIN hash upgraded');
+    }
+    return 'ok';
   }
 
   pinFail(code) {
     return { ok: false, code, triesLeft: pin.MAX_FAILS - (this.pinGuard.fails || 0) };
+  }
+
+  // 'ok' when a change may go ahead: no PIN set, or a live session token.
+  allowed(token) {
+    if (!this.pinRecord) return true;
+    return useSession(this.sessions, token, Date.now());
   }
 
   getStatus() {
@@ -287,49 +322,68 @@ class YahlaApp extends Homey.App {
     return deviceList(this.store);
   }
 
+  unlock(body) {
+    return this.serial(async () => {
+      if (!this.pinRecord) return { ok: true, code: 'open' };
+      const res = await this.tryPin((body || {}).pin);
+      if (res !== 'ok') return this.pinFail(res);
+      return { ok: true, code: 'unlocked', token: openSession(this.sessions, Date.now()) };
+    });
+  }
+
   setPin(body) {
     return this.serial(async () => {
-      const { newPin, oldPin } = body || {};
+      const { token, newPin } = body || {};
+      if (!this.allowed(token)) return { ok: false, code: 'needUnlock' };
       if (!pin.validPin(newPin)) return { ok: false, code: 'invalid' };
-      if (this.pinRecord) {
-        const res = await this.tryPin(oldPin);
-        if (res !== 'ok') return this.pinFail(res);
-      }
       const first = !this.pinRecord;
       this.pinRecord = await pin.hashPin(newPin);
       this.writeGuarded(KEYS.pin, this.pinRecord);
+      // Every other open page must unlock with the new PIN.
+      this.sessions.clear();
       this.log(first ? 'PIN set' : 'PIN changed');
-      this.notify(first ? 'alert.pinSet' : 'alert.pinChanged', {});
-      return { ok: true, code: 'pinSaved' };
+      this.notify(first ? 'alert.pinSet' : 'alert.pinChanged', {}, 'debug');
+      return { ok: true, code: 'pinSaved', token: openSession(this.sessions, Date.now()) };
+    });
+  }
+
+  removePin(body) {
+    return this.serial(async () => {
+      if (!this.pinRecord) return { ok: true, code: 'open' };
+      if (!this.allowed((body || {}).token)) return { ok: false, code: 'needUnlock' };
+      this.pinRecord = null;
+      this.writeGuarded(KEYS.pin, null);
+      this.sessions.clear();
+      this.log('PIN removed');
+      this.notify('alert.pinRemoved', {}, 'always');
+      return { ok: true, code: 'pinRemoved' };
     });
   }
 
   deviceAction(body) {
     return this.serial(async () => {
-      const { pin: given, mac, action } = body || {};
-      const res = await this.tryPin(given);
-      if (res !== 'ok') return this.pinFail(res);
+      const { token, mac, action } = body || {};
+      if (!this.allowed(token)) return { ok: false, code: 'needUnlock' };
       const code = applyDeviceAction(this.store, mac, action, Date.now());
       if (code !== 'ok') return { ok: false, code };
       this.writeGuarded(KEYS.devices, this.store);
       this.dirty = false;
       this.log(`device ${action}`);
-      this.notify(`alert.action.${action}`, { mac: String(mac).toLowerCase().replace(/-/g, ':') });
+      this.notify(`alert.action.${action}`, { mac: String(mac).toLowerCase().replace(/-/g, ':') }, 'debug');
       return { ok: true, code: 'done' };
     });
   }
 
   setConfig(body) {
     return this.serial(async () => {
-      const { pin: given, config } = body || {};
-      const res = await this.tryPin(given);
-      if (res !== 'ok') return this.pinFail(res);
+      const { token, config } = body || {};
+      if (!this.allowed(token)) return { ok: false, code: 'needUnlock' };
       const clean = checkConfig(config);
       if (!clean) return { ok: false, code: 'invalid' };
       this.config = clean;
       this.writeGuarded(KEYS.config, this.config);
       this.log('settings changed');
-      this.notify('alert.configChanged', {});
+      this.notify('alert.configChanged', {}, 'debug');
       return { ok: true, code: 'done' };
     });
   }
