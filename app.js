@@ -141,7 +141,7 @@ class YahlaApp extends Homey.App {
     const text = this.homey.__(key, a.data);
     this.log(`alarm ${a.kind} ${a.severity}`);
     if (this.shows(ALARM_LEVEL[a.kind] || 'always')) {
-      this.homey.notifications.createNotification({ excerpt: text })
+      this.homey.notifications.createNotification({ excerpt: this.stamp(text) })
         .catch((err) => this.error(`notification failed: ${err.message}`));
     }
     this.alarmTrigger.trigger({ kind: a.kind, severity: a.severity, message: text.replace(/\*\*/g, '') })
@@ -159,9 +159,14 @@ class YahlaApp extends Homey.App {
     return watch.formatLocal(ms, this.homey.clock.getTimezone());
   }
 
+  // Date and time first, so a push message on the phone says when it happened.
+  stamp(text) {
+    return `${this.formatTime(Date.now())} - ${text}`;
+  }
+
   notify(key, tokens, level) {
     if (!this.shows(level)) return;
-    this.homey.notifications.createNotification({ excerpt: this.homey.__(key, tokens) })
+    this.homey.notifications.createNotification({ excerpt: this.stamp(this.homey.__(key, tokens)) })
       .catch((err) => this.error(`notification failed: ${err.message}`));
   }
 

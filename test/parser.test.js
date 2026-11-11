@@ -90,3 +90,11 @@ test('a long name is cut to 48 characters with no space at the end', () => {
   assert.strictEqual(name, name.trim());
   assert.strictEqual(safeLabel('abc ' + 'd'.repeat(10), 4), 'abc');
 });
+
+test('device names keep a colon, network labels do not', () => {
+  const line = f.cef('WiFi Client Connected', 'UNIFIclientMac=02:00:00:00:00:10 UNIFIclientHostname=Weather-Station 94:ec UNIFInetworkName=a:b');
+  const e = parseText(line, AT).event;
+  assert.strictEqual(e.name, 'Weather-Station 94:ec');
+  assert.strictEqual(e.network, 'a?b');
+  assert.strictEqual(safeLabel('**x**:1', 48, true), '??x??:1');
+});

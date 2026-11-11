@@ -2,5 +2,9 @@
   "0.1.0": {
     "en": "First release: alerts when an unapproved device joins your network, approvals protected by a PIN, and alarms when the logs stop or look tampered with.",
     "sv": "Första versionen: larmar när en ej godkänd enhet ansluter till ditt nätverk, godkännanden skyddade med PIN, och larm när loggarna slutar komma eller verkar manipulerade."
+  },
+  "0.1.1": {
+    "en": "Alerts on your phone now start with the date and time. Device names that contain a colon are shown correctly.",
+    "sv": "Larm i telefonen börjar nu med datum och klockslag. Enhetsnamn som innehåller kolon visas rätt."
   }
 }

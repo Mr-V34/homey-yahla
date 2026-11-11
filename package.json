@@ -1,6 +1,6 @@
 {
   "name": "com.v34.yahla",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "YAHLA Network Guard: know when a stranger joins your network",
   "main": "app.js",
   "author": "Peter Persson (Mr-V34) <info@v34.com>",
