@@ -10,6 +10,8 @@ const { loadConfig, checkConfig } = require('./lib/config');
 const { applyDeviceAction, deviceList } = require('./lib/admin');
 const { createGuard, remember, isTampered } = require('./lib/guard');
 const pin = require('./lib/pin');
+const watch = require('./lib/watch');
+const { reportTokens } = require('./lib/report');
 
 // ── YAHLA ─────────────────────────────────────────────────────────────────────
 // Listens for syslog on UDP, turns client events into neutral events, and
@@ -19,6 +21,8 @@ const pin = require('./lib/pin');
 const PORT = 5514;
 const SAVE_MS = 60 * 1000;
 const TAMPER_NOTE_MS = 60 * 1000;
+const REPORT_HOUR = 7; // local time of the daily report
+const REPORT_KEY = 'report';
 const KEYS = {
   devices: 'devices', config: 'config', pin: 'pin', pinGuard: 'pinGuard', stats: 'stats',
 };
@@ -32,6 +36,7 @@ class YahlaApp extends Homey.App {
 
   async onInit() {
     const s = this.homey.settings;
+    this.pendingAlarms = [];
     const loaded = loadStore(s.get(KEYS.devices));
     this.store = loaded.store;
     const conf = loadConfig(s.get(KEYS.config));
@@ -42,7 +47,7 @@ class YahlaApp extends Homey.App {
     for (const [what, problem] of [['device list', loaded.problem], ['settings', conf.problem]]) {
       if (problem && problem !== 'empty') {
         this.error(`${what}: ${problem}`);
-        this.notify('alert.storeProblem', { what, problem });
+        this.pendingAlarms.push({ kind: 'storeProblem', severity: 'HIGH', data: { what, problem } });
       }
     }
 
@@ -61,6 +66,12 @@ class YahlaApp extends Homey.App {
     this.pinQueue = Promise.resolve();
     this.rx = createReceiver();
     this.trigger = this.homey.flow.getTriggerCard('unknown_device');
+    this.alarmTrigger = this.homey.flow.getTriggerCard('system_alarm');
+    this.reportTrigger = this.homey.flow.getTriggerCard('daily_report');
+    this.watch = watch.createWatch(Date.now());
+    this.initReportDate();
+    this.pendingAlarms.forEach((a) => this.sendAlarm(a));
+    this.pendingAlarms = [];
     this.listening = false;
 
     this.socket = dgram.createSocket({ type: 'udp4' });
@@ -70,7 +81,7 @@ class YahlaApp extends Homey.App {
       const code = typeof err.code === 'string' ? err.code.slice(0, 32) : 'unknown';
       this.error(`socket error: ${code}`);
       this.closeSocket();
-      this.notify('alert.socket', { code });
+      this.sendAlarm({ kind: 'socket', severity: 'CRITICAL', data: { code } });
     });
     this.socket.on('listening', () => {
       this.listening = true;
@@ -78,7 +89,7 @@ class YahlaApp extends Homey.App {
     });
     this.socket.bind(PORT);
 
-    this.saveTimer = this.homey.setInterval(() => this.save(), SAVE_MS);
+    this.saveTimer = this.homey.setInterval(() => this.everyMinute(), SAVE_MS);
     this.log(`started, ${Object.keys(this.store.devices).length} known devices`);
   }
 
@@ -86,12 +97,25 @@ class YahlaApp extends Homey.App {
 
   onPacket(buf, rinfo) {
     try {
+      const now = Date.now();
       const sender = rinfo && typeof rinfo.address === 'string' ? rinfo.address : null;
-      const event = handlePacket(this.rx, buf, Date.now(), sender, this.config);
-      if (!event) return;
-      const alert = handleEvent(this.store, event, this.config);
-      this.dirty = true;
-      if (alert) this.sendAlert(alert);
+      const event = handlePacket(this.rx, buf, now, sender, this.config);
+      const outcome = this.rx.last;
+      const alarms = watch.notePacket(this.watch, now, outcome === 'foreign' || outcome === 'dropped' ? outcome : 'accepted');
+      if (outcome !== 'foreign' && outcome !== 'dropped') alarms.push(...watch.noteResult(this.watch, now, outcome));
+      if (event) {
+        const isNew = !(event.mac in this.store.devices);
+        if (event.name) this.watch.day.named += 1;
+        const alert = handleEvent(this.store, event, this.config);
+        this.dirty = true;
+        alarms.push(...watch.noteEvent(this.watch, now, isNew));
+        if (alert) {
+          const gate = watch.allowDeviceAlert(this.watch, now);
+          alarms.push(...gate.alarms);
+          if (gate.allowed) this.sendAlert(alert);
+        }
+      }
+      alarms.forEach((a) => this.sendAlarm(a));
     } catch (err) {
       // One bad packet must never take the app down.
       this.error(`packet failed: ${err.message}`);
@@ -103,6 +127,17 @@ class YahlaApp extends Homey.App {
     const n = notificationFor(alert);
     this.notify(n.key, n.tokens);
     this.trigger.trigger(tokensFor(alert))
+      .catch((err) => this.error(`trigger failed: ${err.message}`));
+  }
+
+  // System alarms (fail loud): timeline + Flow trigger "system_alarm".
+  sendAlarm(a) {
+    const key = a.kind === 'flood' && a.data.capped ? 'alarm.floodCap' : `alarm.${a.kind}`;
+    const text = this.homey.__(key, a.data);
+    this.log(`alarm ${a.kind} ${a.severity}`);
+    this.homey.notifications.createNotification({ excerpt: text })
+      .catch((err) => this.error(`notification failed: ${err.message}`));
+    this.alarmTrigger.trigger({ kind: a.kind, severity: a.severity, message: text.replace(/\*\*/g, '') })
       .catch((err) => this.error(`trigger failed: ${err.message}`));
   }
 
@@ -134,11 +169,59 @@ class YahlaApp extends Homey.App {
       const now = Date.now();
       if (now - (this.lastTamperNote.get(key) || 0) >= TAMPER_NOTE_MS) {
         this.lastTamperNote.set(key, now);
-        this.notify('alert.tamper', { key });
+        this.sendAlarm({ kind: 'tamper', severity: 'CRITICAL', data: { key } });
       }
     } catch (err) {
       this.error(`tamper check failed: ${err.message}`);
     }
+  }
+
+  // ── Every minute: silence check, daily report, saving ───────────────────────
+
+  everyMinute() {
+    try {
+      watch.tick(this.watch, Date.now()).forEach((a) => this.sendAlarm(a));
+      this.maybeReport();
+    } catch (err) {
+      this.error(`minute check failed: ${err.message}`);
+    }
+    this.save();
+  }
+
+  localNow() {
+    return watch.localTime(Date.now(), this.homey.clock.getTimezone());
+  }
+
+  // The first report comes the morning after install, not at once.
+  initReportDate() {
+    const r = this.homey.settings.get(REPORT_KEY);
+    if (!r || typeof r.lastDate !== 'string') {
+      const { date, hour } = this.localNow();
+      this.homey.settings.set(REPORT_KEY, { v: 1, lastDate: hour >= REPORT_HOUR ? date : '' });
+    }
+  }
+
+  maybeReport() {
+    const { date, hour } = this.localNow();
+    const r = this.homey.settings.get(REPORT_KEY) || {};
+    if (hour < REPORT_HOUR || r.lastDate === date) return;
+    this.homey.settings.set(REPORT_KEY, { v: 1, lastDate: date });
+    const tokens = reportTokens(date, watch.takeDay(this.watch), this.statusCounts(), {
+      listening: this.listening,
+      lastPacket: this.watch.lastPacket,
+      now: Date.now(),
+      pinSet: Boolean(this.pinRecord),
+      sendersSet: this.config.senders.length > 0,
+      yes: this.homey.__('report.yes'),
+      no: this.homey.__('report.no'),
+      never: this.homey.__('report.never'),
+    });
+    const text = this.homey.__('report.text', tokens);
+    this.log('daily report');
+    this.homey.notifications.createNotification({ excerpt: text })
+      .catch((err) => this.error(`notification failed: ${err.message}`));
+    this.reportTrigger.trigger({ report: text.replace(/\*\*/g, '') })
+      .catch((err) => this.error(`trigger failed: ${err.message}`));
   }
 
   save() {
@@ -179,6 +262,10 @@ class YahlaApp extends Homey.App {
     return ok ? 'ok' : 'wrong';
   }
 
+  pinFail(code) {
+    return { ok: false, code, triesLeft: pin.MAX_FAILS - (this.pinGuard.fails || 0) };
+  }
+
   getStatus() {
     return {
       listening: this.listening,
@@ -188,6 +275,10 @@ class YahlaApp extends Homey.App {
       })),
       pinSet: Boolean(this.pinRecord),
       locked: pin.isLocked(this.pinGuard, Date.now()),
+      lockedUntil: this.pinGuard.lockedUntil || 0,
+      triesLeft: pin.MAX_FAILS - (this.pinGuard.fails || 0),
+      silent: this.watch.silent,
+      lastPacket: this.watch.lastPacket,
       config: this.config,
     };
   }
@@ -202,7 +293,7 @@ class YahlaApp extends Homey.App {
       if (!pin.validPin(newPin)) return { ok: false, code: 'invalid' };
       if (this.pinRecord) {
         const res = await this.tryPin(oldPin);
-        if (res !== 'ok') return { ok: false, code: res };
+        if (res !== 'ok') return this.pinFail(res);
       }
       const first = !this.pinRecord;
       this.pinRecord = await pin.hashPin(newPin);
@@ -217,7 +308,7 @@ class YahlaApp extends Homey.App {
     return this.serial(async () => {
       const { pin: given, mac, action } = body || {};
       const res = await this.tryPin(given);
-      if (res !== 'ok') return { ok: false, code: res };
+      if (res !== 'ok') return this.pinFail(res);
       const code = applyDeviceAction(this.store, mac, action, Date.now());
       if (code !== 'ok') return { ok: false, code };
       this.writeGuarded(KEYS.devices, this.store);
@@ -232,7 +323,7 @@ class YahlaApp extends Homey.App {
     return this.serial(async () => {
       const { pin: given, config } = body || {};
       const res = await this.tryPin(given);
-      if (res !== 'ok') return { ok: false, code: res };
+      if (res !== 'ok') return this.pinFail(res);
       const clean = checkConfig(config);
       if (!clean) return { ok: false, code: 'invalid' };
       this.config = clean;

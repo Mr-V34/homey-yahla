@@ -1,12 +1,9 @@
 {
   "alert": {
-    "new": "**Okänd enhet** på nätverket: **__mac__** (IP __ip__, nät __network__, vid __where__)",
-    "unapproved": "**Ej godkänd enhet** anslöt igen: **__mac__** (IP __ip__, nät __network__, vid __where__)",
-    "hop": "**Ej godkänd enhet bytte nät**: **__mac__** nu på __network__ (IP __ip__, vid __where__)",
+    "new": "**Okänd enhet** på nätverket: **__mac__** (kallar sig __name__, IP __ip__, nät __network__, vid __where__)",
+    "unapproved": "**Ej godkänd enhet** anslöt igen: **__mac__** (kallar sig __name__, IP __ip__, nät __network__, vid __where__)",
+    "hop": "**Ej godkänd enhet bytte nät**: **__mac__** (kallar sig __name__) nu på __network__ (IP __ip__, vid __where__)",
     "full": "**Enhetslistan är full** av godkända enheter. Nya enheter kan inte följas: **__mac__**",
-    "socket": "**YAHLA kan inte ta emot loggar** (__code__). Inga enheter kontrolleras.",
-    "tamper": "**YAHLA-inställning ändrades utifrån** (__key__). Ändringen togs tillbaka. Kontrollera vem som har åtkomst till din Homey.",
-    "storeProblem": "**YAHLA kunde inte läsa sparad __what__** (__problem__). Appen startade med standardvärden.",
     "pinSet": "**YAHLA-PIN har satts.**",
     "pinChanged": "**YAHLA-PIN har ändrats.**",
     "configChanged": "**YAHLA-inställningar ändrades** (avsändare eller larmnivåer).",
@@ -31,7 +28,7 @@
     "newDevices": "Nya enheter (ej godkända)",
     "knownDevices": "Godkända och ignorerade enheter",
     "none": "Inga.",
-    "deviceLine": "IP __ip__, nät __network__, vid __where__, senast __last__",
+    "deviceLine": "Kallar sig __name__. IP __ip__, nät __network__, vid __where__, senast __last__",
     "state": {
       "approved": "Godkänd",
       "ignored": "Ignoreras"
@@ -67,13 +64,32 @@
     "error": "Kunde inte nå appen.",
     "code": {
       "done": "Klart.",
-      "wrong": "Fel PIN.",
-      "locked": "För många felaktiga försök. Låst i 15 minuter.",
+      "wrong": "Fel PIN. __left__ försök kvar innan 15 minuters låsning.",
+      "locked": "För många felaktiga försök. Låst till __until__.",
       "invalid": "Godtogs inte. Kontrollera värdena.",
       "noPin": "Sätt en PIN först.",
       "pinSaved": "PIN sparad.",
       "unknown_device": "Enheten finns inte längre i listan.",
       "error": "Appen nekade anropet eller gick inte att nå."
-    }
+    },
+    "warnSilent": "Inga loggar har kommit på 30 minuter eller mer.",
+    "statusLast": "Senaste logg: __last__."
+  },
+  "alarm": {
+    "silence": "**YAHLA har inte fått några loggar på __minutes__ minuter.** Kontrollera loggavsändaren och nätverket. Inga enheter kontrolleras.",
+    "resumed": "**YAHLA tar emot loggar igen.**",
+    "flood": "**Möjlig översvämning av nätverkshändelser**: __fresh__ nya enheter och __events__ klienthändelser på 10 minuter. Någon kan förfalska händelser.",
+    "floodCap": "**För många enhetslarm**: fler än __capped__ på 10 minuter. Fler larm räknas bara. Någon kan förfalska händelser.",
+    "unknown": "**YAHLA fick en logg i ett okänt format.** Den ignorerades. Om det upprepas, kontrollera loggavsändaren.",
+    "forged": "**YAHLA fick en förfalskad eller oläslig klienthändelse** (dubblerad identitet eller ingen MAC). En enhet kan försöka gömma sig.",
+    "tamper": "**YAHLA-inställning ändrades utifrån** (__key__). Ändringen togs tillbaka. Kontrollera vem som har åtkomst till din Homey.",
+    "socket": "**YAHLA kan inte ta emot loggar** (__code__). Inga enheter kontrolleras.",
+    "storeProblem": "**YAHLA kunde inte läsa sparad __what__** (__problem__). Appen startade med standardvärden."
+  },
+  "report": {
+    "yes": "ja",
+    "no": "nej",
+    "never": "aldrig",
+    "text": "**YAHLA dagsrapport __date__**\nLyssnar: __listening__, senaste logg för __lastPacket__ min sedan\nPaket: __packets__ (godtagna __accepted__, andra avsändare __foreign__, kastade __dropped__)\nKlienthändelser: __events__ (med namn: __named__), nya enheter: __newDevices__\nEnhetslarm: __alerts__ skickade, __suppressed__ återhållna\nOkänt format: __unknown__, förfalskade: __forged__, systemlarm: __alarms__\nEnheter: __fresh__ nya, __approved__ godkända, __ignored__ ignorerade\nPIN satt: __pinSet__, avsändare angivna: __sendersSet__"
   }
 }

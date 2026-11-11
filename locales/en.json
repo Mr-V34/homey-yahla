@@ -1,12 +1,9 @@
 {
   "alert": {
-    "new": "**Unknown device** on the network: **__mac__** (IP __ip__, network __network__, at __where__)",
-    "unapproved": "**Unapproved device** joined again: **__mac__** (IP __ip__, network __network__, at __where__)",
-    "hop": "**Unapproved device changed network**: **__mac__** now on __network__ (IP __ip__, at __where__)",
+    "new": "**Unknown device** on the network: **__mac__** (calls itself __name__, IP __ip__, network __network__, at __where__)",
+    "unapproved": "**Unapproved device** joined again: **__mac__** (calls itself __name__, IP __ip__, network __network__, at __where__)",
+    "hop": "**Unapproved device changed network**: **__mac__** (calls itself __name__) now on __network__ (IP __ip__, at __where__)",
     "full": "**Device list is full** of approved devices. New devices cannot be tracked: **__mac__**",
-    "socket": "**YAHLA cannot listen for logs** (__code__). No devices are being checked.",
-    "tamper": "**YAHLA setting changed from outside** (__key__). The change was undone. Check who has access to your Homey.",
-    "storeProblem": "**YAHLA could not read its saved __what__** (__problem__). It started with defaults.",
     "pinSet": "**YAHLA PIN was set.**",
     "pinChanged": "**YAHLA PIN was changed.**",
     "configChanged": "**YAHLA settings were changed** (senders or network levels).",
@@ -31,7 +28,7 @@
     "newDevices": "New devices (not approved)",
     "knownDevices": "Approved and ignored devices",
     "none": "None.",
-    "deviceLine": "IP __ip__, network __network__, at __where__, last seen __last__",
+    "deviceLine": "Calls itself __name__. IP __ip__, network __network__, at __where__, last seen __last__",
     "state": {
       "approved": "Approved",
       "ignored": "Ignored"
@@ -67,13 +64,32 @@
     "error": "Could not reach the app.",
     "code": {
       "done": "Done.",
-      "wrong": "Wrong PIN.",
-      "locked": "Too many wrong tries. Locked for 15 minutes.",
+      "wrong": "Wrong PIN. __left__ tries left before a 15 minute lock.",
+      "locked": "Too many wrong tries. Locked until __until__.",
       "invalid": "Not accepted. Check the values.",
       "noPin": "Set a PIN first.",
       "pinSaved": "PIN saved.",
       "unknown_device": "That device is no longer in the list.",
       "error": "The app refused the call or could not be reached."
-    }
+    },
+    "warnSilent": "No logs received for 30 minutes or more.",
+    "statusLast": "Last log: __last__."
+  },
+  "alarm": {
+    "silence": "**YAHLA has received no logs for __minutes__ minutes.** Check the log sender and the network. Devices are not being checked.",
+    "resumed": "**YAHLA receives logs again.**",
+    "flood": "**Possible flood of network events**: __fresh__ new devices and __events__ client events in 10 minutes. Someone may be faking events.",
+    "floodCap": "**Too many device alerts**: more than __capped__ in 10 minutes. Further alerts are only counted. Someone may be faking events.",
+    "unknown": "**YAHLA received a log in an unknown format.** It was ignored. If this repeats, check the log sender.",
+    "forged": "**YAHLA received a forged or unreadable client event** (repeated identity or no MAC). A device may be trying to hide.",
+    "tamper": "**YAHLA setting changed from outside** (__key__). The change was undone. Check who has access to your Homey.",
+    "socket": "**YAHLA cannot listen for logs** (__code__). No devices are being checked.",
+    "storeProblem": "**YAHLA could not read its saved __what__** (__problem__). It started with defaults."
+  },
+  "report": {
+    "yes": "yes",
+    "no": "no",
+    "never": "never",
+    "text": "**YAHLA daily report __date__**\nListening: __listening__, last log __lastPacket__ min ago\nPackets: __packets__ (accepted __accepted__, other senders __foreign__, dropped __dropped__)\nClient events: __events__ (with a name: __named__), new devices: __newDevices__\nDevice alerts: __alerts__ sent, __suppressed__ held back\nUnknown format: __unknown__, forged: __forged__, system alarms: __alarms__\nDevices: __fresh__ new, __approved__ approved, __ignored__ ignored\nPIN set: __pinSet__, senders set: __sendersSet__"
   }
 }

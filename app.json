@@ -56,6 +56,80 @@
   "flow": {
     "triggers": [
       {
+        "id": "daily_report",
+        "title": {
+          "en": "YAHLA daily report is ready",
+          "sv": "YAHLA:s dagsrapport är klar"
+        },
+        "hint": {
+          "en": "Runs once a day at 07:00. If the report does not come, YAHLA is not working.",
+          "sv": "Körs en gång om dagen kl. 07:00. Om rapporten uteblir fungerar inte YAHLA."
+        },
+        "tokens": [
+          {
+            "name": "report",
+            "type": "string",
+            "title": {
+              "en": "Report",
+              "sv": "Rapport"
+            },
+            "example": {
+              "en": "Packets: 1200, new devices: 0",
+              "sv": "Paket: 1200, nya enheter: 0"
+            }
+          }
+        ]
+      },
+      {
+        "id": "system_alarm",
+        "title": {
+          "en": "YAHLA raised an alarm",
+          "sv": "YAHLA larmade"
+        },
+        "hint": {
+          "en": "Runs when YAHLA itself has a problem: no logs, a flood, unknown or forged packets, settings changed from outside, or it cannot listen.",
+          "sv": "Körs när YAHLA själv har ett problem: inga loggar, en översvämning, okända eller förfalskade paket, inställningar ändrade utifrån, eller att appen inte kan lyssna."
+        },
+        "tokens": [
+          {
+            "name": "kind",
+            "type": "string",
+            "title": {
+              "en": "Kind",
+              "sv": "Typ"
+            },
+            "example": {
+              "en": "silence",
+              "sv": "silence"
+            }
+          },
+          {
+            "name": "severity",
+            "type": "string",
+            "title": {
+              "en": "Severity",
+              "sv": "Allvarlighet"
+            },
+            "example": {
+              "en": "HIGH",
+              "sv": "HIGH"
+            }
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "title": {
+              "en": "Message",
+              "sv": "Meddelande"
+            },
+            "example": {
+              "en": "No logs for 30 minutes",
+              "sv": "Inga loggar på 30 minuter"
+            }
+          }
+        ]
+      },
+      {
         "id": "unknown_device",
         "title": {
           "en": "An unapproved device was seen",
@@ -136,6 +210,18 @@
             "example": {
               "en": "Access point",
               "sv": "Accesspunkt"
+            }
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "title": {
+              "en": "Name (given by the device)",
+              "sv": "Namn (enhetens eget)"
+            },
+            "example": {
+              "en": "phone",
+              "sv": "telefon"
             }
           }
         ]

@@ -13,7 +13,7 @@ test('Wi-Fi join becomes a neutral join event', () => {
   assert.strictEqual(out.result, 'event');
   assert.deepStrictEqual(out.event, {
     mac: '02:00:00:00:00:01', ip: '192.168.1.50', network: 'Home', vlan: 10,
-    where: 'Hall AP', kind: 'join', at: AT, source: 'unifi-cef',
+    where: 'Hall AP', name: null, kind: 'join', at: AT, source: 'unifi-cef',
   });
 });
 
@@ -73,4 +73,12 @@ test('huge and odd input does not throw', () => {
   assert.doesNotThrow(() => parseText(junk, AT));
   assert.doesNotThrow(() => parseText('CEF:' + '\\|'.repeat(4000), AT));
   assert.doesNotThrow(() => parseText('\u0000￿'.repeat(1000), AT));
+});
+
+test('device name: alias first, else hostname, always a plain label', () => {
+  const both = f.cef('WiFi Client Connected', 'UNIFIclientMac=02:00:00:00:00:0d UNIFIclientHostname=phone-1 UNIFIclientAlias=Kitchen tablet');
+  assert.strictEqual(parseText(both, AT).event.name, 'Kitchen tablet');
+  const host = f.cef('WiFi Client Connected', 'UNIFIclientMac=02:00:00:00:00:0d UNIFIclientHostname=<b>evil</b>');
+  assert.strictEqual(parseText(host, AT).event.name, '?b?evil??b?');
+  assert.strictEqual(parseText(f.WIFI_JOIN, AT).event.name, null);
 });

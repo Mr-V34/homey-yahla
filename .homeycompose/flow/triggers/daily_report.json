@@ -1,0 +1,14 @@
+{
+  "id": "daily_report",
+  "title": {
+    "en": "YAHLA daily report is ready",
+    "sv": "YAHLA:s dagsrapport är klar"
+  },
+  "hint": {
+    "en": "Runs once a day at 07:00. If the report does not come, YAHLA is not working.",
+    "sv": "Körs en gång om dagen kl. 07:00. Om rapporten uteblir fungerar inte YAHLA."
+  },
+  "tokens": [
+    { "name": "report", "type": "string", "title": { "en": "Report", "sv": "Rapport" }, "example": { "en": "Packets: 1200, new devices: 0", "sv": "Paket: 1200, nya enheter: 0" } }
+  ]
+}

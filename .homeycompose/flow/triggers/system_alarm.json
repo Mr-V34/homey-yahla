@@ -1,0 +1,16 @@
+{
+  "id": "system_alarm",
+  "title": {
+    "en": "YAHLA raised an alarm",
+    "sv": "YAHLA larmade"
+  },
+  "hint": {
+    "en": "Runs when YAHLA itself has a problem: no logs, a flood, unknown or forged packets, settings changed from outside, or it cannot listen.",
+    "sv": "Körs när YAHLA själv har ett problem: inga loggar, en översvämning, okända eller förfalskade paket, inställningar ändrade utifrån, eller att appen inte kan lyssna."
+  },
+  "tokens": [
+    { "name": "kind", "type": "string", "title": { "en": "Kind", "sv": "Typ" }, "example": { "en": "silence", "sv": "silence" } },
+    { "name": "severity", "type": "string", "title": { "en": "Severity", "sv": "Allvarlighet" }, "example": { "en": "HIGH", "sv": "HIGH" } },
+    { "name": "message", "type": "string", "title": { "en": "Message", "sv": "Meddelande" }, "example": { "en": "No logs for 30 minutes", "sv": "Inga loggar på 30 minuter" } }
+  ]
+}

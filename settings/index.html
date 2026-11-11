@@ -85,7 +85,16 @@
         return e;
       }
       function t(key, tokens) { return Homey.__('settings.' + key, tokens) || key; }
-      function show(code) { $('result').textContent = t('code.' + code); }
+      var lastStatus = null;
+      var formLoaded = false; // the senders and levels form is filled once, and again after a save,
+                              // so a refresh never overwrites what the owner is typing
+      function show(err, r) {
+        if (err) { $('result').textContent = t('code.error'); return; }
+        $('result').textContent = t('code.' + r.code, {
+          left: String(r.triesLeft !== undefined ? r.triesLeft : ''),
+          until: lastStatus ? when(lastStatus.lockedUntil) : '-',
+        });
+      }
       function when(ms) { return ms ? new Date(ms).toLocaleString() : '-'; }
       function netLabel(key) {
         if (!key) return '-';
@@ -96,7 +105,7 @@
 
       function act(mac, action) {
         Homey.api('POST', '/device', { pin: $('pin').value, mac: mac, action: action }, function (err, r) {
-          show(err ? 'error' : r.code);
+          show(err, r);
           refresh();
         });
       }
@@ -105,7 +114,7 @@
         var row = el('div', null, 'row');
         var who = el('div', d.mac, 'who');
         who.appendChild(el('small', t('deviceLine', {
-          ip: d.ip || '-', network: netLabel(d.network), where: d.where || '-', last: when(d.lastSeen),
+          name: d.name || '-', ip: d.ip || '-', network: netLabel(d.network), where: d.where || '-', last: when(d.lastSeen),
         })));
         if (d.state !== 'new') who.appendChild(el('small', t('state.' + d.state)));
         row.appendChild(who);
@@ -128,9 +137,12 @@
         });
         if (!$('newList').firstChild) $('newList').appendChild(el('p', t('none'), 'muted'));
         if (!$('knownList').firstChild) $('knownList').appendChild(el('p', t('none'), 'muted'));
+        if (formLoaded) return;
         Object.keys(config.severity).forEach(function (k) { seen[k] = true; });
         networks = Object.keys(seen).sort();
         renderNetworks();
+        $('senders').value = config.senders.join(', ');
+        formLoaded = true;
       }
 
       function levelSelect(id, value, withNone) {
@@ -167,6 +179,7 @@
       }
 
       function renderStatus(s) {
+        lastStatus = s;
         config = s.config;
         var c = s.counts;
         $('status').textContent = t('statusLine', {
@@ -174,15 +187,15 @@
           packets: String(c.packets), events: String(c.events), unknown: String(c.unknown),
           bad: String(c.bad), foreign: String(c.foreign), fresh: String(c.new),
           approved: String(c.approved), ignored: String(c.ignored),
-        });
+        }) + ' ' + t('statusLast', { last: when(s.lastPacket) });
         var w = [];
         if (!s.listening) w.push(t('warnNotListening'));
         if (!s.pinSet) w.push(t('warnNoPin'));
-        if (s.locked) w.push(t('code.locked'));
+        if (s.silent) w.push(t('warnSilent'));
+        if (s.locked) w.push(t('code.locked', { until: when(s.lockedUntil) }));
         if (!config.senders.length) w.push(t('warnNoSenders'));
         $('warnings').textContent = w.join(' ');
         $('oldPinGroup').style.display = s.pinSet ? '' : 'none';
-        if (document.activeElement !== $('senders')) $('senders').value = config.senders.join(', ');
         var box = $('seenSenders');
         clear(box);
         s.senders.forEach(function (x) {
@@ -223,7 +236,8 @@
           defaultSeverity: $('level-default').value,
         };
         Homey.api('POST', '/config', { pin: $('pin').value, config: next }, function (err, r) {
-          show(err ? 'error' : r.code);
+          show(err, r);
+          if (!err && r.ok) formLoaded = false; // show what was saved
           refresh();
         });
       });
@@ -232,7 +246,7 @@
         Homey.api('POST', '/pin', { newPin: $('newPin').value, oldPin: $('oldPin').value }, function (err, r) {
           $('newPin').value = '';
           $('oldPin').value = '';
-          show(err ? 'error' : r.code);
+          show(err, r);
           refresh();
         });
       });
