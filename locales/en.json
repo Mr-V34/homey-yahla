@@ -98,7 +98,18 @@
       "network": "Network: __network__",
       "where": "At: __where__",
       "seen": "First seen __first__, last seen __last__"
-    }
+    },
+    "sources": {
+      "title": "Which routers work?",
+      "intro": "YAHLA reads logs that your router sends to Homey (syslog over UDP, port 5514). Enter the router's address under Allowed senders.",
+      "unifi": "UniFi (UniFi Network, the Activity Logging / SIEM server setting): MAC address, IP address, name, network and VLAN, and which access point or switch port. Tested with real equipment.",
+      "asus": "ASUS (Asuswrt and Merlin, the Remote log server field): MAC address, IP address, name, network interface (for example br0) and radio (for example eth2). No VLAN. Built from published log samples, not yet tested with a real ASUS router.",
+      "openwrt": "OpenWrt and other routers that log with hostapd and dnsmasq: the same details as ASUS. Built from published log samples, not yet tested with a real router.",
+      "unsupported": "Does not work: TP-Link Deco, AVM Fritz!Box and Netgear home routers – we have found no way to make them send logs to another device. TP-Link Omada and internet providers' routers are not supported yet.",
+      "note": "Good to know: an alert waits up to 10 seconds for the router's DHCP line, so the name and IP address are included. A device with a fixed IP address is only seen through the Wi-Fi line, without name and IP. The name is chosen by the device and can be false; YAHLA recognises a device by its MAC address."
+    },
+    "saveSenders": "Save senders",
+    "deviceHelp": "Approve: never alerts. Ignore: never alerts, shown as ignored. Forget: removed from the list, alerts as new if it is seen again. Remove approval: moves back to new devices."
   },
   "alarm": {
     "silence": "**YAHLA has received no logs for __minutes__ minutes.** Check the log sender and the network. Devices are not being checked.",

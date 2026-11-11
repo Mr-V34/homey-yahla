@@ -98,7 +98,18 @@
       "network": "Nät: __network__",
       "where": "Vid: __where__",
       "seen": "Först sedd __first__, senast sedd __last__"
-    }
+    },
+    "sources": {
+      "title": "Vilka routrar fungerar?",
+      "intro": "YAHLA läser loggar som routern skickar till Homey (syslog över UDP, port 5514). Ange routerns adress under Tillåtna avsändare.",
+      "unifi": "UniFi (UniFi Network, inställningen Activity Logging / SIEM server): MAC-adress, IP-adress, namn, nät och VLAN, och vilken accesspunkt eller switchport. Testad med riktig utrustning.",
+      "asus": "ASUS (Asuswrt och Merlin, fältet Remote log server): MAC-adress, IP-adress, namn, nätverksgränssnitt (till exempel br0) och radio (till exempel eth2). Inget VLAN. Byggt efter publicerade loggexempel, ännu inte testat med en riktig ASUS-router.",
+      "openwrt": "OpenWrt och andra routrar som loggar med hostapd och dnsmasq: samma uppgifter som ASUS. Byggt efter publicerade loggexempel, ännu inte testat med en riktig router.",
+      "unsupported": "Fungerar inte: TP-Link Deco, AVM Fritz!Box och Netgears hemroutrar – vi har inte hittat något sätt att få dem att skicka loggar till en annan enhet. TP-Link Omada och operatörernas routrar stöds inte än.",
+      "note": "Bra att veta: larmet väntar upp till 10 sekunder på routerns DHCP-rad så att namn och IP-adress kommer med. En enhet med fast IP-adress syns bara via Wi-Fi-raden, utan namn och IP. Namnet väljer enheten själv och kan vara falskt; MAC-adressen är det YAHLA känner igen enheten på."
+    },
+    "saveSenders": "Spara avsändare",
+    "deviceHelp": "Godkänn: larmar aldrig. Ignorera: larmar aldrig, visas som ignorerad. Glöm: tas bort ur listan och larmar som ny om den syns igen. Ta bort godkännande: flyttas tillbaka till nya enheter."
   },
   "alarm": {
     "silence": "**YAHLA har inte fått några loggar på __minutes__ minuter.** Kontrollera loggavsändaren och nätverket. Inga enheter kontrolleras.",
