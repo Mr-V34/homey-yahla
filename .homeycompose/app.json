@@ -1,0 +1,33 @@
+{
+  "id": "com.v34.yahla",
+  "version": "0.1.0",
+  "compatibility": ">=12.3.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "YAHLA",
+    "sv": "YAHLA"
+  },
+  "description": {
+    "en": "Get an alert when an unknown device joins your network.",
+    "sv": "Få ett larm när en okänd enhet ansluter till ditt nätverk."
+  },
+  "category": [
+    "security"
+  ],
+  "brandColor": "#2F4F6F",
+  "permissions": [],
+  "author": {
+    "name": "Peter Persson (Mr-V34)",
+    "email": "info@v34.com"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "B.Frank"
+      }
+    ]
+  }
+}

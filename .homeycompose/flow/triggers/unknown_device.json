@@ -1,0 +1,19 @@
+{
+  "id": "unknown_device",
+  "title": {
+    "en": "An unapproved device was seen",
+    "sv": "En ej godkänd enhet upptäcktes"
+  },
+  "hint": {
+    "en": "Runs when a device that is not on your approved list joins the network.",
+    "sv": "Körs när en enhet som inte finns på din godkända lista ansluter till nätverket."
+  },
+  "tokens": [
+    { "name": "type", "type": "string", "title": { "en": "Type", "sv": "Typ" }, "example": { "en": "new", "sv": "new" } },
+    { "name": "severity", "type": "string", "title": { "en": "Severity", "sv": "Allvarlighet" }, "example": { "en": "HIGH", "sv": "HIGH" } },
+    { "name": "mac", "type": "string", "title": { "en": "MAC address", "sv": "MAC-adress" }, "example": { "en": "02:00:00:00:00:01", "sv": "02:00:00:00:00:01" } },
+    { "name": "ip", "type": "string", "title": { "en": "IP address", "sv": "IP-adress" }, "example": { "en": "192.168.1.50", "sv": "192.168.1.50" } },
+    { "name": "network", "type": "string", "title": { "en": "Network", "sv": "Nätverk" }, "example": { "en": "Guest", "sv": "Gäst" } },
+    { "name": "where", "type": "string", "title": { "en": "Where", "sv": "Var" }, "example": { "en": "Access point", "sv": "Accesspunkt" } }
+  ]
+}

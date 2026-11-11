@@ -1,0 +1,9 @@
+{
+  "alert": {
+    "new": "**Unknown device** on the network: **__mac__** (IP __ip__, network __network__, at __where__)",
+    "unapproved": "**Unapproved device** joined again: **__mac__** (IP __ip__, network __network__, at __where__)",
+    "hop": "**Unapproved device changed network**: **__mac__** now on __network__ (IP __ip__, at __where__)",
+    "full": "**Device list is full** of approved devices. New devices cannot be tracked: **__mac__**",
+    "socket": "**YAHLA cannot listen for logs** (__code__). No devices are being checked."
+  }
+}

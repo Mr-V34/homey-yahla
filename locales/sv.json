@@ -1,0 +1,9 @@
+{
+  "alert": {
+    "new": "**Okänd enhet** på nätverket: **__mac__** (IP __ip__, nät __network__, vid __where__)",
+    "unapproved": "**Ej godkänd enhet** anslöt igen: **__mac__** (IP __ip__, nät __network__, vid __where__)",
+    "hop": "**Ej godkänd enhet bytte nät**: **__mac__** nu på __network__ (IP __ip__, vid __where__)",
+    "full": "**Enhetslistan är full** av godkända enheter. Nya enheter kan inte följas: **__mac__**",
+    "socket": "**YAHLA kan inte ta emot loggar** (__code__). Inga enheter kontrolleras."
+  }
+}
