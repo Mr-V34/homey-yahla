@@ -283,7 +283,13 @@ class YahlaApp extends Homey.App {
         this.writeGuarded(KEYS.devices, this.store);
         this.dirty = false;
       }
-      this.homey.settings.set(KEYS.stats, { v: 1, ...this.statusCounts(), at: new Date().toISOString() });
+      // Counters are written only when they changed, not every minute.
+      const counts = this.statusCounts();
+      const sig = Object.values(counts).join(',');
+      if (sig !== this.lastStatsSig) {
+        this.homey.settings.set(KEYS.stats, { v: 1, ...counts, at: new Date().toISOString() });
+        this.lastStatsSig = sig;
+      }
     } catch (err) {
       this.error(`save failed: ${err.message}`);
     }
