@@ -45,6 +45,19 @@ Other log formats are counted and reported, never guessed.
    - **YAHLA raised an alarm** (tokens: kind, severity, message)
    - **YAHLA daily report is ready** (token: report)
 
+## Notifications on your phone
+
+YAHLA writes its alerts to the Homey timeline. Whether they also reach your phone as a push message is a
+Homey setting, not a YAHLA one: in the Homey app, open the timeline settings and turn on push for YAHLA.
+That is all most people need; no Flow is required.
+
+Flows add more when you want it, for example:
+
+- **YAHLA raised an alarm** with severity `CRITICAL` (settings changed from outside, a flood, cannot listen)
+  → *Send a critical alert*, which also sounds when the phone is silent or in a Focus mode.
+- **YAHLA daily report is ready** → set a Yes/No variable; a second Flow at 07:15 sends a push when the
+  variable is still No, so you hear about it when YAHLA itself has stopped.
+
 ## Security model, plainly
 
 - **Approval needs the owner.** With a PIN set, the settings page asks for it and stays unlocked for

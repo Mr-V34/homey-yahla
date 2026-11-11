@@ -34,6 +34,13 @@
 - **Alert level per network**: for example Silent for a guest network, where devices are listed but
   never alerted.
 
+### Notifications on your phone
+
+YAHLA writes to the Homey timeline. To get a push message as well, turn on push for YAHLA in the Homey
+app's timeline settings. No Flow is needed for that. Use Flows for more, for example a critical alert
+(sounds in silent mode) when "YAHLA raised an alarm" has severity CRITICAL, or a check at 07:15 that the
+daily report came.
+
 ### Alarms
 
 | Alarm | What it means |
@@ -79,6 +86,13 @@ same network. Changes to the settings while YAHLA is stopped cannot be seen.
   igen"). Larm för tystnad, översvämning, ändringar utifrån, förlorad port, skadad data och borttagen
   PIN, samt dagsrapporten, kommer alltid i tidslinjen. Flöden får alltid allt.
 - **Larmnivå per nät**: till exempel Tyst för ett gästnät, där enheter listas men aldrig larmar.
+
+### Notiser i telefonen
+
+YAHLA skriver i Homeys tidslinje. För att även få ett pushmeddelande slår du på push för YAHLA i
+tidslinjens inställningar i Homey-appen. Inget flöde behövs för det. Använd flöden för mer, till exempel
+en kritisk varning (hörs även i tyst läge) när "YAHLA larmade" har allvarlighet CRITICAL, eller en
+kontroll kl 07:15 att dagsrapporten kom.
 
 ### Larm
 
