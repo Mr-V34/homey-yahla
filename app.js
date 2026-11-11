@@ -13,6 +13,7 @@ const pin = require('./lib/pin');
 const { createSessions, openSession, useSession } = require('./lib/session');
 const watch = require('./lib/watch');
 const { reportTokens } = require('./lib/report');
+const hold = require('./lib/hold');
 
 // ── YAHLA ─────────────────────────────────────────────────────────────────────
 // Listens for syslog on UDP, turns client events into neutral events, and
@@ -69,6 +70,8 @@ class YahlaApp extends Homey.App {
     this.dirty = false;
     this.pinQueue = Promise.resolve();
     this.sessions = createSessions();
+    this.held = hold.createHold();
+    this.holdTimer = null;
     this.rx = createReceiver();
     this.trigger = this.homey.flow.getTriggerCard('unknown_device');
     this.alarmTrigger = this.homey.flow.getTriggerCard('system_alarm');
@@ -114,16 +117,42 @@ class YahlaApp extends Homey.App {
         const alert = handleEvent(this.store, event, this.config);
         this.dirty = true;
         alarms.push(...watch.noteEvent(this.watch, now, isNew));
-        if (alert) {
-          const gate = watch.allowDeviceAlert(this.watch, now);
-          alarms.push(...gate.alarms);
-          if (gate.allowed) this.sendAlert(alert);
-        }
+        // A held Wi-Fi alert for this device gets the IP and name from this line.
+        const filled = hold.fillHeld(this.held, event, this.config);
+        if (filled) this.passAlert(filled, now, alarms);
+        else if (alert && hold.holdAlert(this.held, alert, now)) this.armHold();
+        else if (alert) this.passAlert(alert, now, alarms);
       }
       alarms.forEach((a) => this.sendAlarm(a));
     } catch (err) {
       // One bad packet must never take the app down.
       this.error(`packet failed: ${err.message}`);
+    }
+  }
+
+  // The alert cap (watch) decides whether a device alert may go out.
+  passAlert(alert, now, alarms) {
+    const gate = watch.allowDeviceAlert(this.watch, now);
+    alarms.push(...gate.alarms);
+    if (gate.allowed) this.sendAlert(alert);
+  }
+
+  // One timer for all held alerts; it sends those whose wait is over.
+  armHold(delay = hold.HOLD_MS) {
+    if (this.holdTimer) return;
+    this.holdTimer = this.homey.setTimeout(() => this.releaseHeld(), Math.max(delay, 100));
+  }
+
+  releaseHeld() {
+    this.holdTimer = null;
+    try {
+      const now = Date.now();
+      const alarms = [];
+      hold.takeDue(this.held, now).forEach((a) => this.passAlert(a, now, alarms));
+      alarms.forEach((a) => this.sendAlarm(a));
+      if (this.held.size) this.armHold(hold.nextDue(this.held) - now);
+    } catch (err) {
+      this.error(`held alerts failed: ${err.message}`);
     }
   }
 
@@ -411,6 +440,7 @@ class YahlaApp extends Homey.App {
 
   async onUninit() {
     if (this.saveTimer) this.homey.clearInterval(this.saveTimer);
+    if (this.holdTimer) this.homey.clearTimeout(this.holdTimer);
     if (this.onSettingChange) {
       this.homey.settings.off('set', this.onSettingChange);
       this.homey.settings.off('unset', this.onSettingChange);
