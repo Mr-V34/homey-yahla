@@ -72,13 +72,15 @@ test('unknown and forged packets alarm once per hour', () => {
   assert.deepStrictEqual(w8.noteResult(w, T0, 'skip'), []);
 });
 
-test('day counters are handed over and reset', () => {
+test('day counters are handed over with their start time, and reset', () => {
   const w = w8.createWatch(T0);
   w8.notePacket(w, T0, 'accepted');
   w8.noteResult(w, T0, 'event');
-  const day = w8.takeDay(w);
+  const day = w8.takeDay(w, T0 + 5 * MIN);
   assert.strictEqual(day.packets, 1);
   assert.strictEqual(day.events, 1);
+  assert.strictEqual(day.since, T0);
+  assert.strictEqual(w.dayStart, T0 + 5 * MIN);
   assert.strictEqual(w.day.packets, 0);
 });
 
@@ -98,16 +100,51 @@ test('receiver tells what happened to the last packet', () => {
   assert.strictEqual(rx.last, 'bad');
 });
 
-test('report tokens are plain strings with counts only', () => {
-  const { reportTokens } = require('../lib/report');
-  const w = w8.createWatch(T0);
-  w8.notePacket(w, T0, 'accepted');
-  const tok = reportTokens('2026-01-15', w8.takeDay(w), { new: 1, approved: 2, ignored: 0 }, {
-    listening: true, lastPacket: T0, now: T0 + 5 * MIN, pinSet: true, sendersSet: false, yes: 'ja', no: 'nej', never: 'aldrig',
-  });
-  for (const v of Object.values(tok)) assert.strictEqual(typeof v, 'string');
-  assert.strictEqual(tok.lastPacket, '5');
-  assert.strictEqual(tok.sendersSet, 'nej');
+const { reportText } = require('../lib/report');
+const seen = [];
+const tr = (key, tokens) => { seen.push(tokens); return key + JSON.stringify(tokens); };
+const healthy = {
+  listening: true, silent: false, lastPacket: '2026-01-15 06:55', since: '2026-01-14 07:00',
+  accepted: 1200, newDevices: 1, events: 260, unknown: 0, alerts: 1, suppressed: 0, alarms: 0, foreign: 0, fresh: 1, approved: 20, ignored: 2,
+};
+const keys = (text) => text.split('\n').map((l) => l.split('{')[0]);
+
+test('short report: one line, counts only, every token a string', () => {
+  seen.length = 0;
+  const text = reportText('short', healthy, tr);
+  assert.ok(text.startsWith('report.ok'));
+  assert.ok(!text.includes('\n'));
+  assert.deepStrictEqual(seen, [{ since: '2026-01-14 07:00', packets: '1200', newDevices: '1' }]);
+});
+
+test('short report says so when YAHLA is not getting logs', () => {
+  assert.ok(reportText('short', { ...healthy, silent: true }, tr).startsWith('report.problem'));
+  const never = reportText('short', { ...healthy, lastPacket: null }, tr);
+  assert.ok(never.startsWith('report.problem'));
+  assert.strictEqual(never, `report.problem${JSON.stringify({ last: 'report.neverundefined' })}`);
+});
+
+test('report blames the port, not the router, when YAHLA cannot listen', () => {
+  assert.strictEqual(reportText('short', { ...healthy, listening: false }, tr), 'report.noSocketundefined');
+  assert.strictEqual(reportText('short', { ...healthy, listening: false, lastPacket: null }, tr), 'report.noSocketundefined');
+});
+
+test('report says so when logs arrive but cannot be read', () => {
+  seen.length = 0;
+  const text = reportText('short', { ...healthy, events: 0, unknown: 40 }, tr);
+  assert.ok(text.startsWith('report.unreadable'));
+  assert.deepStrictEqual(seen, [{ since: '2026-01-14 07:00', packets: '1200', unknown: '40' }]);
+  assert.ok(reportText('short', { ...healthy, events: 0, unknown: 0 }, tr).startsWith('report.ok'));
+  assert.deepStrictEqual(keys(reportText('full', { ...healthy, events: 0, unknown: 40 }, tr)),
+    ['report.unreadable', 'report.devices', 'report.alerts']);
+});
+
+test('detailed report: three lines, and problem lines only when there is something to say', () => {
+  seen.length = 0;
+  assert.deepStrictEqual(keys(reportText('full', healthy, tr)), ['report.ok', 'report.devices', 'report.alerts']);
+  for (const tokens of seen) for (const v of Object.values(tokens)) assert.strictEqual(typeof v, 'string');
+  const busy = reportText('full', { ...healthy, suppressed: 2, alarms: 1, foreign: 5 }, tr);
+  assert.deepStrictEqual(keys(busy), ['report.ok', 'report.devices', 'report.alerts', 'report.suppressed', 'report.alarms', 'report.foreign']);
 });
 
 test('local time text for alerts', () => {

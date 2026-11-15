@@ -13,17 +13,17 @@
       "unapprove": "**Godkännande borttaget** i YAHLA: **__mac__**",
       "forget": "**Enhet glömd** i YAHLA: **__mac__**"
     },
-    "pinRemoved": "**YAHLA-PIN togs bort.** Alla som kan öppna inställningssidan kan nu göra ändringar."
+    "pinRemoved": "**YAHLA-PIN togs bort.** Alla som kan öppna inställningssidan kan nu göra ändringar.",
+    "privateNote": " (privat adress)"
   },
   "settings": {
     "title": "YAHLA",
-    "intro": "Larmar när en enhet som du inte har godkänt ansluter till nätverket. Varje ändring kräver din PIN.",
+    "intro": "Larmar när en enhet som du inte har godkänt ansluter till nätverket.",
     "status": "Status",
     "statusLine": "Lyssnar: __listening__. Paket: __packets__, klienthändelser: __events__, okända: __unknown__, förfalskade: __bad__, från andra avsändare: __foreign__. Enheter: __fresh__ nya, __approved__ godkända, __ignored__ ignorerade.",
     "yes": "ja",
     "no": "nej",
     "warnNotListening": "YAHLA tar inte emot loggar.",
-    "warnNoPin": "Ingen PIN: alla som kan öppna sidan kan göra ändringar. Sätt en PIN längst ner på sidan.",
     "warnNoSenders": "Ingen avsändare angiven: loggar från alla adresser tas emot.",
     "newDevices": "Nya enheter (ej godkända)",
     "knownDevices": "Godkända och ignorerade enheter",
@@ -80,12 +80,12 @@
     "statusLast": "Senaste logg: __last__.",
     "unlockTitle": "Ange din PIN för att göra ändringar",
     "unlock": "Lås upp",
-    "pinHelp": "Med en PIN frågar sidan efter den när den öppnas och är sedan upplåst i 15 minuter efter att den senast användes. Utan PIN kan alla som kan öppna sidan ändra.",
+    "pinHelp": "En PIN är frivillig. I våra tester släpper Homey inte in gäster och vanliga användare till sidans funktioner. En PIN lägger till ett lås för alla andra som kan hantera appar i din Homey: sidan frågar då efter den när den öppnas och är sedan upplåst i 15 minuter efter att den senast användes.",
     "removePin": "Ta bort PIN",
     "removePinConfirm": "Ta bort PIN? Då kan alla som kan öppna sidan godkänna enheter och ändra inställningar.",
     "removePinAgain": "Tryck igen inom 10 sekunder för att ta bort PIN",
     "logTitle": "Tidslinje",
-    "logHelp": "Hur mycket YAHLA skriver i Homeys tidslinje. Allvarliga larm och dagsrapporten kommer alltid. Flöden får alltid allt.",
+    "logHelp": "Hur mycket YAHLA skriver i Homeys tidslinje. Allvarliga larm kommer alltid. Flöden får alltid allt.",
     "log": {
       "minimum": "Minimum: nya enheter, kort",
       "extended": "Utökad: nya enheter med detaljer",
@@ -103,13 +103,23 @@
       "title": "Vilka routrar fungerar?",
       "intro": "YAHLA läser loggar som routern skickar till Homey (syslog över UDP, port 5514). Ange routerns adress under Tillåtna avsändare.",
       "unifi": "UniFi (UniFi Network, inställningen Activity Logging / SIEM server): MAC-adress, IP-adress, namn, nät och VLAN, och vilken accesspunkt eller switchport. Testad med riktig utrustning.",
-      "asus": "ASUS (Asuswrt och Merlin, fältet Remote log server): MAC-adress, IP-adress, namn, nätverksgränssnitt (till exempel br0) och radio (till exempel eth2). Inget VLAN. Byggt efter publicerade loggexempel, ännu inte testat med en riktig ASUS-router.",
-      "openwrt": "OpenWrt och andra routrar som loggar med hostapd och dnsmasq: samma uppgifter som ASUS. Byggt efter publicerade loggexempel, ännu inte testat med en riktig router.",
-      "unsupported": "Fungerar inte: TP-Link Deco, AVM Fritz!Box och Netgears hemroutrar – vi har inte hittat något sätt att få dem att skicka loggar till en annan enhet. TP-Link Omada och operatörernas routrar stöds inte än.",
+      "asus": "ASUS (Asuswrt och Merlin, fältet Remote log server): bör fungera. MAC-adress, IP-adress, namn, nätverksgränssnitt (till exempel br0) och radio (till exempel eth2). Inget VLAN. Ännu inte testat med riktig utrustning.",
+      "openwrt": "OpenWrt och andra routrar som loggar med hostapd och dnsmasq: bör fungera, med samma uppgifter som ASUS. Ännu inte testat med riktig utrustning.",
+      "other": "Andra routrar: routern måste kunna skicka syslog till en annan enhet. Loggrader som YAHLA inte förstår räknas och rapporteras, de gissas aldrig.",
       "note": "Bra att veta: larmet väntar upp till 10 sekunder på routerns DHCP-rad så att namn och IP-adress kommer med. En enhet med fast IP-adress syns bara via Wi-Fi-raden, utan namn och IP. Namnet väljer enheten själv och kan vara falskt; MAC-adressen är det YAHLA känner igen enheten på."
     },
     "saveSenders": "Spara avsändare",
-    "deviceHelp": "Godkänn: larmar aldrig. Ignorera: larmar aldrig, visas som ignorerad. Glöm: tas bort ur listan och larmar som ny om den syns igen. Ta bort godkännande: flyttas tillbaka till nya enheter."
+    "deviceHelp": "Godkänn: larmar aldrig. Ignorera: larmar aldrig, visas som ignorerad. Glöm: tas bort ur listan och larmar som ny om den syns igen. Ta bort godkännande: flyttas tillbaka till nya enheter.",
+    "privateMac": "Privat adress",
+    "privateHelp": "Mobiler och klockor använder ofta en privat adress som är olika för varje nät. Om en sådan enhet byter adress ser YAHLA den som en ny enhet. I enhetens Wi-Fi-inställningar för ditt hemnät kan du välja en fast adress.",
+    "reportTitle": "Dagsrapport",
+    "reportHelp": "En gång om dagen skriver YAHLA i tidslinjen så att du vet att appen lever. Det är appens hjärtslag: uteblir det fungerar inte YAHLA. Flödeskortet för dagsrapporten körs alltid, även när rapporten är avstängd.",
+    "reportMode": {
+      "off": "Av",
+      "short": "Kort: en rad",
+      "full": "Utförlig: enheter, larm och problem"
+    },
+    "reportHour": "Klockslag"
   },
   "alarm": {
     "silence": "**YAHLA har inte fått några loggar på __minutes__ minuter.** Kontrollera loggavsändaren och nätverket. Inga enheter kontrolleras.",
@@ -120,13 +130,25 @@
     "forged": "**YAHLA fick en förfalskad eller oläslig klienthändelse** (dubblerad identitet eller ingen MAC). En enhet kan försöka gömma sig.",
     "tamper": "**YAHLA-inställning ändrades utifrån** (__key__). Ändringen togs tillbaka. Kontrollera vem som har åtkomst till din Homey.",
     "socket": "**YAHLA kan inte ta emot loggar** (__code__). Inga enheter kontrolleras.",
-    "storeProblem": "**YAHLA kunde inte läsa sparad __what__** (__problem__). Appen startade med standardvärden."
+    "storeProblem": "**YAHLA kunde inte läsa det som sparats: __what__** (__problem__). Appen startade med standardvärden.",
+    "socketBack": "**YAHLA tar emot loggar igen efter portfelet.**",
+    "what": {
+      "devices": "enhetslistan",
+      "config": "inställningarna",
+      "pin": "PIN-koden"
+    }
   },
   "report": {
-    "yes": "ja",
-    "no": "nej",
-    "never": "aldrig",
-    "text": "**YAHLA dagsrapport __date__**\nLyssnar: __listening__, senaste logg för __lastPacket__ min sedan\nPaket: __packets__ (godtagna __accepted__, andra avsändare __foreign__, kastade __dropped__)\nKlienthändelser: __events__ (med namn: __named__), nya enheter: __newDevices__\nEnhetslarm: __alerts__ skickade, __suppressed__ återhållna\nOkänt format: __unknown__, förfalskade: __forged__, systemlarm: __alarms__\nEnheter: __fresh__ nya, __approved__ godkända, __ignored__ ignorerade\nPIN satt: __pinSet__, avsändare angivna: __sendersSet__"
+    "ok": "**YAHLA lever.** Sedan __since__: __packets__ loggrader, __newDevices__ nya enheter.",
+    "problem": "**YAHLA är igång men får inga loggar.** Senaste logg: __last__. Kontrollera routerns logginställning.",
+    "noSocket": "**YAHLA kan inte lyssna efter loggar.** UDP-port 5514 i Homey är inte ledig. YAHLA försöker igen varje minut; se tidslinjen.",
+    "unreadable": "**YAHLA får loggar men kan inte läsa dem.** Sedan __since__: __packets__ loggrader, __unknown__ i ett format som YAHLA inte känner, inga enhetshändelser. Ingen enhet kontrolleras; se routrarna som stöds i manualen.",
+    "never": "ingen än",
+    "devices": "Enheter: __fresh__ väntar på godkännande, __approved__ godkända, __ignored__ ignorerade.",
+    "alerts": "Skickade enhetslarm: __alerts__.",
+    "suppressed": "Larm som hölls tillbaka för att det kom för många på en gång: __suppressed__.",
+    "alarms": "Systemlarm: __alarms__. Se tidslinjen.",
+    "foreign": "Loggrader från avsändare som inte är tillåtna: __foreign__."
   },
   "alertShort": {
     "new": "**Okänd enhet**: **__mac__** (__name__)",

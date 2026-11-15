@@ -240,8 +240,10 @@ code `'wrong'`, `'locked'` or `'noPin'`.
   2. With a `senderIp`: note the sender; when not allowed by `config`: `foreign += 1`, last `'foreign'`, return `null`.
   3. Not a Buffer or longer than `MAX_PACKET`: `oversize += 1`, last `'dropped'`, return `null`.
   4. More than `MAX_PER_MINUTE` in this minute: `rate += 1`, last `'dropped'`, return `null`.
-  5. Text = the buffer as UTF-8 with every trailing whitespace and NUL character removed
-     (`.replace(/[\s\0]+$/, '')`). Syslog senders differ: some end a line with a line feed, some with NUL.
+  5. Text = the buffer as UTF-8 with every trailing space and control character removed (character code
+     32 or lower, which covers line feed, carriage return and NUL). Syslog senders differ: some end a line
+     with a line feed, some with NUL. This is done with a loop from the end (`stripEnd`), never with a
+     regex: `/[\s\0]+$/` needs about n * n steps for a packet full of blanks.
   6. `parseText(text, now)`; count the result; return the event or `null`.
 
 ### 4.4 lib/registry.js
@@ -284,17 +286,21 @@ code `'wrong'`, `'locked'` or `'noPin'`.
 
 - `mode`: `'short'` or `'full'`.
 - `d`: `{ listening: boolean, silent: boolean, lastPacket: text or null, since: text, accepted, newDevices,
-  alerts, suppressed, alarms, foreign, fresh, approved, ignored }` (the last ten are numbers; `lastPacket` and
-  `since` are already formatted local times).
+  events, unknown, alerts, suppressed, alarms, foreign, fresh, approved, ignored }` (the last twelve are
+  numbers; `events` and `unknown` are the day counters of client events and lines in no known format;
+  `lastPacket` and `since` are already formatted local times).
 - `tr(key, tokens)` -> text (the app passes `this.homey.__`). Every token value is passed as a string.
 
 Steps:
 
-1. `healthy = d.listening && !d.silent && d.lastPacket !== null`.
-2. First line: healthy -> `tr('report.ok', { since, packets: accepted, newDevices })`; else
-   `tr('report.problem', { last: d.lastPacket ?? tr('report.never') })`.
-3. `mode === 'short'`: return the first line.
-4. Else lines = first line, `tr('report.devices', { fresh, approved, ignored })`, `tr('report.alerts', { alerts })`;
+1. First line, the first rule that matches:
+   - `!d.listening` -> `tr('report.noSocket')` (the port on the Homey is the cause, not the router);
+   - `d.silent || d.lastPacket === null` -> `tr('report.problem', { last: d.lastPacket ?? tr('report.never') })`;
+   - `d.events === 0 && d.unknown > 0` -> `tr('report.unreadable', { since, packets: accepted, unknown })`
+     (logs arrive but YAHLA cannot read them, so no device is checked);
+   - else -> `tr('report.ok', { since, packets: accepted, newDevices })`.
+2. `mode === 'short'`: return the first line.
+3. Else lines = first line, `tr('report.devices', { fresh, approved, ignored })`, `tr('report.alerts', { alerts })`;
    then only when the number is above 0: `tr('report.suppressed', { suppressed })`,
    `tr('report.alarms', { alarms })`, `tr('report.foreign', { foreign })`. Return the lines joined with `\n`.
 
@@ -308,7 +314,8 @@ The report never holds an address or a name.
   start the minute tick.
 - `openSocket()`: create a `udp4` socket, bind `PORT`. On `listening`: `listening = true`; when `socketDown`
   is set, clear it and send alarm `socketBack`. On `error` (only from the socket that is current): close it,
-  and when `socketDown` is not set: set it and send alarm `socket`. So one alarm per outage, not one per try.
+  and when `socketDown` is not set: log `socket error: <code>`, set it and send alarm `socket`. So one log line
+  and one alarm per outage, not one per try; the retry every minute is silent.
 - `everyMinute()`: when `socket` is `null`, call `openSocket()` (retry); `watch.tick`; `maybeReport()`; `save()`.
 - `onPacket(buf, rinfo)`: receiver -> watch -> detector -> hold -> alert. After `handleEvent`: a new device or
   a returned alert sets `saveNow`; any other event sets `saveLater`. Never throws.
@@ -317,7 +324,8 @@ The report never holds an address or a name.
   (`SLOW_SAVE_MS` has passed or `force`). `onUninit` calls `save(true)`.
 - `maybeReport()`: `{ date, hour }` = local time. Return when `hour < config.reportHour` or the stored
   `lastDate` equals `date`. Else store `lastDate = date`, build the text with
-  `reportText(config.report === 'full' ? 'full' : 'short', ...)`, write it to the timeline (with the date-time
+  `reportText(config.report === 'full' ? 'full' : 'short', ...)` (with `events` and `unknown` from the day
+  counters), write it to the timeline (with the date-time
   stamp) unless `config.report === 'off'`, and **always** fire `daily_report` with the text (without `**`).
 - `initReportDate()`: with no stored `lastDate`: store today's date when `hour >= config.reportHour`, else `''`.
 - `sendAlert(alert)`: timeline text (level `'minimum'`) + trigger `unknown_device`. In the timeline text a

@@ -3,7 +3,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { parseText } = require('../lib/parsers');
-const { safeLabel, normalizeMac, validIp } = require('../lib/event');
+const {
+  safeLabel, normalizeMac, validIp, isPrivateMac,
+} = require('../lib/event');
 const f = require('./fixtures');
 
 const AT = 1700000000000;
@@ -97,4 +99,13 @@ test('device names keep a colon, network labels do not', () => {
   assert.strictEqual(e.name, 'Weather-Station 94:ec');
   assert.strictEqual(e.network, 'a?b');
   assert.strictEqual(safeLabel('**x**:1', 48, true), '??x??:1');
+});
+
+test('private (locally administered) addresses are recognised', () => {
+  for (const mac of ['02:00:00:00:00:01', 'aa:00:00:00:00:01', '56:00:00:00:00:01', 'fe:00:00:00:00:01']) {
+    assert.strictEqual(isPrivateMac(mac), true, mac);
+  }
+  for (const mac of ['00:0e:58:00:00:01', '74:e5:f9:00:00:01', null, '']) {
+    assert.strictEqual(isPrivateMac(mac), false, String(mac));
+  }
 });

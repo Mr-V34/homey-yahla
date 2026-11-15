@@ -6,6 +6,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { parseText } = require('../lib/parsers');
+const { createReceiver, handlePacket } = require('../lib/receiver');
 
 const AT = 1700000000000;
 const ACK = '<30>Nov 11 12:00:02 dnsmasq-dhcp[392]: DHCPACK(br0) 192.168.1.51 02:00:00:00:02:01 test-laptop';
@@ -78,4 +79,23 @@ test('bad MAC shapes are not events', () => {
 
 test('plain router noise is still unknown', () => {
   assert.strictEqual(parseText('<14>Nov 11 12:00:00 kernel: br0: port 2 entered forwarding state', AT).result, 'unknown');
+});
+
+test('a packet full of blanks is handled fast', () => {
+  const rx = createReceiver();
+  const started = process.hrtime.bigint();
+  for (const filler of [' ', '\n', '\0']) handlePacket(rx, Buffer.from(`${filler.repeat(16383)}x`), AT);
+  const ms = Number(process.hrtime.bigint() - started) / 1e6;
+  assert.strictEqual(rx.last, 'unknown');
+  assert.ok(ms < 50, `took ${ms} ms`);
+});
+
+test('a line is read whatever ending the sender adds', () => {
+  for (const line of [ACK, ASSOC, STA_ON]) {
+    for (const ending of ['', '\n', '\r\n', '\0', '\n\0']) {
+      const rx = createReceiver();
+      handlePacket(rx, Buffer.from(line + ending), AT);
+      assert.strictEqual(rx.last, 'event', JSON.stringify(line.slice(-12) + ending));
+    }
+  }
 });

@@ -5,8 +5,8 @@
     "sv": "En ej godkänd enhet upptäcktes"
   },
   "hint": {
-    "en": "Runs when a device that is not on your approved list joins the network.",
-    "sv": "Körs när en enhet som inte finns på din godkända lista ansluter till nätverket."
+    "en": "Runs when a device that is not on your approved list joins the network. Type is new (seen for the first time), unapproved (seen before, still not approved), hop (changed network) or full (the device list is full). Severity is INFO, WARNING, HIGH or CRITICAL, as you set per network.",
+    "sv": "Körs när en enhet som inte finns på din godkända lista ansluter till nätverket. Typ är new (sedd för första gången), unapproved (sedd förut, fortfarande inte godkänd), hop (bytte nät) eller full (enhetslistan är full). Allvarlighet är INFO, WARNING, HIGH eller CRITICAL, enligt din inställning per nät."
   },
   "tokens": [
     {

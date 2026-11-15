@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.v34.yahla",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -19,6 +19,24 @@
     "security"
   ],
   "brandColor": "#E05000",
+  "tags": {
+    "en": [
+      "network",
+      "security",
+      "unifi",
+      "syslog",
+      "intruder",
+      "wifi"
+    ],
+    "sv": [
+      "nätverk",
+      "säkerhet",
+      "unifi",
+      "syslog",
+      "intrång",
+      "wifi"
+    ]
+  },
   "permissions": [],
   "author": {
     "name": "Peter Persson (Mr-V34)",
@@ -31,6 +49,12 @@
       }
     ]
   },
+  "support": "mailto:info@v34.com",
+  "source": "https://github.com/Mr-V34/homey-yahla",
+  "bugs": {
+    "url": "https://github.com/Mr-V34/homey-yahla/issues"
+  },
+  "homepage": "https://github.com/Mr-V34/homey-yahla/blob/main/docs/MANUAL.md",
   "api": {
     "getStatus": {
       "method": "POST",
@@ -71,12 +95,12 @@
       {
         "id": "daily_report",
         "title": {
-          "en": "YAHLA daily report is ready",
-          "sv": "YAHLA:s dagsrapport är klar"
+          "en": "The daily report is ready",
+          "sv": "Dagsrapporten är klar"
         },
         "hint": {
-          "en": "Runs once a day at 07:00. If the report does not come, YAHLA is not working.",
-          "sv": "Körs en gång om dagen kl. 07:00. Om rapporten uteblir fungerar inte YAHLA."
+          "en": "Runs once a day at the hour you chose in the app settings (07:00 unless you changed it), also when the timeline report is turned off. If it does not run, YAHLA is not working.",
+          "sv": "Körs en gång om dagen vid det klockslag du valt i appens inställningar (07:00 om du inte ändrat det), även när rapporten i tidslinjen är avstängd. Om kortet inte körs fungerar inte YAHLA."
         },
         "tokens": [
           {
@@ -87,8 +111,8 @@
               "sv": "Rapport"
             },
             "example": {
-              "en": "Packets: 1200, new devices: 0",
-              "sv": "Paket: 1200, nya enheter: 0"
+              "en": "YAHLA is running. Since 2026-01-01 07:00: 1200 log lines, 0 new devices.",
+              "sv": "YAHLA lever. Sedan 2026-01-01 07:00: 1200 loggrader, 0 nya enheter."
             }
           }
         ]
@@ -96,12 +120,12 @@
       {
         "id": "system_alarm",
         "title": {
-          "en": "YAHLA raised an alarm",
-          "sv": "YAHLA larmade"
+          "en": "A system alarm was raised",
+          "sv": "Ett systemlarm utlöstes"
         },
         "hint": {
-          "en": "Runs when YAHLA itself has a problem: no logs, a flood, unknown or forged packets, settings changed from outside, or it cannot listen.",
-          "sv": "Körs när YAHLA själv har ett problem: inga loggar, en översvämning, okända eller förfalskade paket, inställningar ändrade utifrån, eller att appen inte kan lyssna."
+          "en": "Runs when YAHLA itself has a problem. Kind is silence (no logs), resumed (logs again), flood, unknown (unknown log format), forged, tamper (settings changed from outside), socket (cannot listen), socketBack (listening again) or storeProblem (saved data could not be read). Severity is INFO, WARNING, HIGH or CRITICAL.",
+          "sv": "Körs när YAHLA själv har ett problem. Typ är silence (inga loggar), resumed (loggar igen), flood (översvämning), unknown (okänt loggformat), forged (förfalskat), tamper (inställningar ändrade utifrån), socket (kan inte lyssna), socketBack (lyssnar igen) eller storeProblem (sparad data kunde inte läsas). Allvarlighet är INFO, WARNING, HIGH eller CRITICAL."
         },
         "tokens": [
           {
@@ -149,8 +173,8 @@
           "sv": "En ej godkänd enhet upptäcktes"
         },
         "hint": {
-          "en": "Runs when a device that is not on your approved list joins the network.",
-          "sv": "Körs när en enhet som inte finns på din godkända lista ansluter till nätverket."
+          "en": "Runs when a device that is not on your approved list joins the network. Type is new (seen for the first time), unapproved (seen before, still not approved), hop (changed network) or full (the device list is full). Severity is INFO, WARNING, HIGH or CRITICAL, as you set per network.",
+          "sv": "Körs när en enhet som inte finns på din godkända lista ansluter till nätverket. Typ är new (sedd för första gången), unapproved (sedd förut, fortfarande inte godkänd), hop (bytte nät) eller full (enhetslistan är full). Allvarlighet är INFO, WARNING, HIGH eller CRITICAL, enligt din inställning per nät."
         },
         "tokens": [
           {
