@@ -18,5 +18,9 @@
   "0.3.0": {
     "en": "The daily report is now one short line that shows YAHLA is alive. You choose in the settings whether it comes, how detailed it is and at what time. Devices with a private address are marked. YAHLA now retries by itself if it loses its port, and reads router lines it could miss before.",
     "sv": "Dagsrapporten är nu en kort rad som visar att YAHLA lever. I inställningarna väljer du om den ska komma, hur utförlig den ska vara och vilket klockslag. Enheter med privat adress märks ut. YAHLA försöker nu själv igen om den tappar sin port, och läser routerrader som den tidigare kunde missa."
+  },
+  "0.3.1": {
+    "en": "Clearer description: YAHLA is built for UniFi.",
+    "sv": "Tydligare beskrivning: YAHLA är byggd för UniFi."
   }
 }
