@@ -17,25 +17,25 @@ const T0 = 1700000000000;
 const ev = (line, at) => parseText(line, at).event;
 
 test('config accepts only clean, complete input', () => {
-  const ok = checkConfig({ senders: ['192.168.1.1', '192.168.1.1'], severity: { 'vlan:10': 'NONE', 'name:Guest net': 'INFO' }, defaultSeverity: 'HIGH', logLevel: 'extended' });
+  const ok = checkConfig({ senders: ['192.168.1.1', '192.168.1.1'], severity: { 'vlan:10': 'NONE', 'name:Guest net': 'INFO' }, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 });
   assert.deepStrictEqual(ok.senders, ['192.168.1.1']);
-  assert.strictEqual(checkConfig({ senders: ['1.2.3.4', 'evil'], severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended' }), null);
-  assert.strictEqual(checkConfig({ senders: ['fe80::1'], severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended' }), null);
-  assert.strictEqual(checkConfig({ senders: [], severity: { 'vlan:10': 'LOUD' }, defaultSeverity: 'HIGH', logLevel: 'extended' }), null);
-  assert.strictEqual(checkConfig({ senders: [], severity: { '<b>': 'HIGH' }, defaultSeverity: 'HIGH', logLevel: 'extended' }), null);
-  assert.strictEqual(checkConfig({ senders: [], severity: {}, defaultSeverity: 'NONE', logLevel: 'extended' }), null);
-  assert.strictEqual(checkConfig({ senders: new Array(6).fill('1.2.3.4'), severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended' }), null);
-  assert.strictEqual(checkConfig({ senders: [], severity: [], defaultSeverity: 'HIGH', logLevel: 'extended' }), null);
+  assert.strictEqual(checkConfig({ senders: ['1.2.3.4', 'evil'], severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 }), null);
+  assert.strictEqual(checkConfig({ senders: ['fe80::1'], severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 }), null);
+  assert.strictEqual(checkConfig({ senders: [], severity: { 'vlan:10': 'LOUD' }, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 }), null);
+  assert.strictEqual(checkConfig({ senders: [], severity: { '<b>': 'HIGH' }, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 }), null);
+  assert.strictEqual(checkConfig({ senders: [], severity: {}, defaultSeverity: 'NONE', logLevel: 'extended', report: 'short', reportHour: 7 }), null);
+  assert.strictEqual(checkConfig({ senders: new Array(6).fill('1.2.3.4'), severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 }), null);
+  assert.strictEqual(checkConfig({ senders: [], severity: [], defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 }), null);
   assert.strictEqual(loadConfig({ v: 1, senders: 'x' }).problem, 'invalid');
   assert.strictEqual(severityFor(defaultConfig(), 'vlan:10'), 'HIGH');
 });
 
 test('a silent network records devices but never alerts', () => {
-  const config = checkConfig({ senders: [], severity: { 'vlan:10': 'NONE' }, defaultSeverity: 'HIGH', logLevel: 'extended' });
+  const config = checkConfig({ senders: [], severity: { 'vlan:10': 'NONE' }, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 });
   const store = emptyStore();
   assert.strictEqual(handleEvent(store, ev(f.WIFI_JOIN, T0), config), null);
   assert.ok(store.devices['02:00:00:00:00:01']);
-  const a = handleEvent(store, ev(f.WIRED_JOIN, T0), checkConfig({ senders: [], severity: { 'vlan:20': 'CRITICAL' }, defaultSeverity: 'HIGH', logLevel: 'extended' }));
+  const a = handleEvent(store, ev(f.WIRED_JOIN, T0), checkConfig({ senders: [], severity: { 'vlan:20': 'CRITICAL' }, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 }));
   assert.strictEqual(a.severity, 'CRITICAL');
 });
 
@@ -66,7 +66,7 @@ test('guard sees outside writes only', () => {
 });
 
 test('sender filter drops other senders and remembers who sent', () => {
-  const config = checkConfig({ senders: ['192.168.1.1'], severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended' });
+  const config = checkConfig({ senders: ['192.168.1.1'], severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 });
   const rx = createReceiver();
   assert.ok(handlePacket(rx, Buffer.from(f.WIFI_JOIN), T0, '192.168.1.1', config));
   assert.strictEqual(handlePacket(rx, Buffer.from(f.WIFI_JOIN), T0, '192.168.1.66', config), null);
@@ -78,12 +78,35 @@ test('sender filter drops other senders and remembers who sent', () => {
   assert.ok(handlePacket(rx, Buffer.from(f.WIFI_JOIN), T0, '10.0.0.1', defaultConfig()), 'empty list accepts all');
 });
 
-test('config v1 is migrated to v2 with log level extended; bad log levels are refused', () => {
+test('config v1 is migrated to v3 with log level extended and the short report at 7', () => {
   const { config, problem } = loadConfig({ v: 1, senders: ['192.168.1.1'], severity: { 'vlan:11': 'CRITICAL' }, defaultSeverity: 'WARNING' });
   assert.strictEqual(problem, null);
-  assert.deepStrictEqual(config, { v: 2, senders: ['192.168.1.1'], severity: { 'vlan:11': 'CRITICAL' }, defaultSeverity: 'WARNING', logLevel: 'extended' });
-  assert.strictEqual(checkConfig({ senders: [], severity: {}, defaultSeverity: 'HIGH', logLevel: 'loud' }), null);
-  assert.strictEqual(checkConfig({ senders: [], severity: {}, defaultSeverity: 'HIGH' }), null);
+  assert.deepStrictEqual(config, {
+    v: 3, senders: ['192.168.1.1'], severity: { 'vlan:11': 'CRITICAL' }, defaultSeverity: 'WARNING', logLevel: 'extended', report: 'short', reportHour: 7,
+  });
+});
+
+test('config v2 is migrated to v3 and keeps the owner\'s log level', () => {
+  const { config, problem } = loadConfig({ v: 2, senders: ['192.168.1.1'], severity: {}, defaultSeverity: 'HIGH', logLevel: 'minimum' });
+  assert.strictEqual(problem, null);
+  assert.strictEqual(config.logLevel, 'minimum');
+  assert.strictEqual(config.report, 'short');
+  assert.strictEqual(config.reportHour, 7);
+  assert.strictEqual(config.v, 3);
+  assert.deepStrictEqual(config.senders, ['192.168.1.1']);
+});
+
+test('bad log levels, report modes and report hours are refused', () => {
+  const base = { senders: [], severity: {}, defaultSeverity: 'HIGH', logLevel: 'extended', report: 'short', reportHour: 7 };
+  assert.ok(checkConfig(base));
+  assert.strictEqual(checkConfig({ ...base, logLevel: 'loud' }), null);
+  assert.strictEqual(checkConfig({ ...base, logLevel: undefined }), null);
+  assert.strictEqual(checkConfig({ ...base, report: 'loud' }), null);
+  for (const reportHour of [24, -1, 7.5, '7']) assert.strictEqual(checkConfig({ ...base, reportHour }), null);
+  assert.strictEqual(checkConfig({ ...base, report: undefined }), null);
+  assert.strictEqual(checkConfig({ ...base, reportHour: undefined }), null);
+  assert.ok(checkConfig({ ...base, report: 'off', reportHour: 0 }));
+  assert.ok(checkConfig({ ...base, report: 'full', reportHour: 23 }));
 });
 
 test('minimum gives the short text, other levels the full one with first seen', () => {
@@ -95,4 +118,14 @@ test('minimum gives the short text, other levels the full one with first seen', 
   const full = notificationFor(a, 'extended', fmt);
   assert.strictEqual(full.key, 'alert.new');
   assert.strictEqual(full.tokens.first, `t${T0}`);
+});
+
+test('a private MAC gets the note in the timeline text, never in the Flow token', () => {
+  const { notificationFor, tokensFor } = require('../lib/alerts');
+  const a = handleEvent(emptyStore(), ev(f.WIFI_JOIN, T0));
+  const fmt = (ms) => `t${ms}`;
+  assert.strictEqual(notificationFor(a, 'minimum', fmt, ' (x)').tokens.mac, '02:00:00:00:00:01 (x)');
+  assert.strictEqual(tokensFor(a).mac, '02:00:00:00:00:01');
+  const global = { ...a, event: { ...a.event, mac: '00:0e:58:00:00:01' } };
+  assert.strictEqual(notificationFor(global, 'minimum', fmt, ' (x)').tokens.mac, '00:0e:58:00:00:01');
 });

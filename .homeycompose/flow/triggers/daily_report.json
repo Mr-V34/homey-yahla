@@ -1,14 +1,14 @@
 {
   "id": "daily_report",
   "title": {
-    "en": "YAHLA daily report is ready",
-    "sv": "YAHLA:s dagsrapport är klar"
+    "en": "The daily report is ready",
+    "sv": "Dagsrapporten är klar"
   },
   "hint": {
-    "en": "Runs once a day at 07:00. If the report does not come, YAHLA is not working.",
-    "sv": "Körs en gång om dagen kl. 07:00. Om rapporten uteblir fungerar inte YAHLA."
+    "en": "Runs once a day at the hour you chose in the app settings (07:00 unless you changed it), also when the timeline report is turned off. If it does not run, YAHLA is not working.",
+    "sv": "Körs en gång om dagen vid det klockslag du valt i appens inställningar (07:00 om du inte ändrat det), även när rapporten i tidslinjen är avstängd. Om kortet inte körs fungerar inte YAHLA."
   },
   "tokens": [
-    { "name": "report", "type": "string", "title": { "en": "Report", "sv": "Rapport" }, "example": { "en": "Packets: 1200, new devices: 0", "sv": "Paket: 1200, nya enheter: 0" } }
+    { "name": "report", "type": "string", "title": { "en": "Report", "sv": "Rapport" }, "example": { "en": "YAHLA is running. Since 2026-01-01 07:00: 1200 log lines, 0 new devices.", "sv": "YAHLA lever. Sedan 2026-01-01 07:00: 1200 loggrader, 0 nya enheter." } }
   ]
 }

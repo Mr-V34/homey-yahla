@@ -2,6 +2,8 @@
 
 **Know when a stranger joins your network.**
 
+Manual (English and Svenska): [docs/MANUAL.md](docs/MANUAL.md)
+
 YAHLA (Yet Another Homey Log Analyser) is a Homey Pro app that listens to the network logs your
 router or access points already send. When a device that you have not approved joins the network,
 YAHLA tells you in the Homey timeline and starts your Flows.
@@ -17,20 +19,22 @@ The source is public so that anyone can see exactly what the app does with the d
   when an unapproved device moves to another network.
 - Watches itself and raises an alarm when the logs stop, when it is flooded with events, when a
   packet looks forged, or when its settings are changed from outside the app.
-- Sends a daily report at 07:00. If the report does not come, YAHLA is not working.
+- Sends a daily report, one short line by default, at the hour you choose (07:00 unless you change
+  it). It is the heartbeat: if it does not come, YAHLA is not working.
+- Retries by itself every minute if it loses its port, with one alarm when it fails and one note
+  when it listens again.
 
 ## Supported routers
 
 | Router | How to send logs | What YAHLA gets | Tested |
 | --- | --- | --- | --- |
 | UniFi | Activity Logging (SIEM server) | MAC, IP, name, network and VLAN, access point or switch port | Yes, real equipment |
-| ASUS (Asuswrt, Merlin) | System Log, Remote log server | MAC, IP, name, interface (br0), radio (eth2); no VLAN | Published log samples only |
-| OpenWrt and others with hostapd + dnsmasq | Remote syslog | Same as ASUS | Published log samples only |
+| ASUS (Asuswrt, Merlin) | System Log, Remote log server | MAC, IP, name, interface (br0), radio (eth2); no VLAN | Should work, not yet tested with real equipment |
+| OpenWrt and others with hostapd + dnsmasq | Remote syslog | Same as ASUS | Should work, not yet tested with real equipment |
 
-Not supported: TP-Link Deco, AVM Fritz!Box and Netgear home routers (we found no way to make them
-send logs), TP-Link Omada and internet providers' routers (not yet). On ASUS and OpenWrt the Wi-Fi
-line comes about a second before the DHCP line, so an alert waits up to 10 seconds for it to get the
-name and IP. Other log formats are counted and reported, never guessed.
+A router must be able to send syslog to another device. On ASUS and OpenWrt the Wi-Fi line comes
+about a second before the DHCP line, so an alert waits up to 10 seconds for it to get the name and
+IP. Other log formats are counted and reported, never guessed.
 
 ## What it does not do
 
@@ -47,14 +51,14 @@ name and IP. Other log formats are counted and reported, never guessed.
    In the UniFi versions we have used, this setting takes one address only, so it replaces any
    other log server you send to.
 3. Open the YAHLA settings page in the Homey app (Settings, Apps, YAHLA):
-   - set a PIN right away (until a PIN is set, anyone who can open the page can set one),
    - under "Allowed senders", add the address your logs come from (the page lists the senders it
      has seen, for example `192.168.1.1`). Until you do, logs from any address are accepted,
-   - approve the devices you know as they appear.
+   - approve the devices you know as they appear,
+   - a PIN is optional: it adds a lock for everyone else who can manage apps on your Homey.
 4. Use the Flow cards to decide what happens:
    - **An unapproved device was seen** (tokens: type, severity, MAC, IP, network, where, name)
-   - **YAHLA raised an alarm** (tokens: kind, severity, message)
-   - **YAHLA daily report is ready** (token: report)
+   - **A system alarm was raised** (tokens: kind, severity, message)
+   - **The daily report is ready** (token: report)
 
 ## Notifications on your phone
 
@@ -64,15 +68,16 @@ That is all most people need; no Flow is required.
 
 Flows add more when you want it, for example:
 
-- **YAHLA raised an alarm** with severity `CRITICAL` (settings changed from outside, a flood, cannot listen)
+- **A system alarm was raised** with severity `CRITICAL` (settings changed from outside, a flood, cannot listen)
   → *Send a critical alert*, which also sounds when the phone is silent or in a Focus mode.
-- **YAHLA daily report is ready** → set a Yes/No variable; a second Flow at 07:15 sends a push when the
-  variable is still No, so you hear about it when YAHLA itself has stopped.
+- **The daily report is ready** → set a Yes/No variable; a second Flow a little after the report hour
+  sends a push when the variable is still No, so you hear about it when YAHLA itself has stopped. The
+  card runs every day, also when the timeline report is turned off.
 
 ## Security model, plainly
 
-- **Approval needs the owner.** With a PIN set, the settings page asks for it and stays unlocked for
-  15 minutes after it was last used. Without the PIN the app's API only gives counts: no device
+- **Approval needs the owner.** A PIN is optional. With a PIN set, the settings page asks for it and
+  stays unlocked for 15 minutes after it was last used. Until it is entered the app's API only gives counts: no device
   list, no addresses and no changes. Five wrong tries lock it for 15 minutes. Only a salted
   PBKDF2-SHA256 hash of the PIN is stored.
 - **Who can reach the app at all.** Tested on Homey Pro firmware 13.5: Homey blocks the Guest and
@@ -91,6 +96,8 @@ Flows add more when you want it, for example:
   UDP senders can be faked from the same network, so "allowed senders" cuts noise but is no proof,
   and with an empty list every sender is accepted.
   The name a device gives itself can be anything; YAHLA shows it, never trusts it.
+  Phones and watches often use a private address that is different for each network; if such a
+  device changes its address, YAHLA sees it as a new device.
 
 ## Privacy
 

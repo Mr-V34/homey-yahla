@@ -1,12 +1,12 @@
 {
   "id": "system_alarm",
   "title": {
-    "en": "YAHLA raised an alarm",
-    "sv": "YAHLA larmade"
+    "en": "A system alarm was raised",
+    "sv": "Ett systemlarm utlöstes"
   },
   "hint": {
-    "en": "Runs when YAHLA itself has a problem: no logs, a flood, unknown or forged packets, settings changed from outside, or it cannot listen.",
-    "sv": "Körs när YAHLA själv har ett problem: inga loggar, en översvämning, okända eller förfalskade paket, inställningar ändrade utifrån, eller att appen inte kan lyssna."
+    "en": "Runs when YAHLA itself has a problem. Kind is silence (no logs), resumed (logs again), flood, unknown (unknown log format), forged, tamper (settings changed from outside), socket (cannot listen), socketBack (listening again) or storeProblem (saved data could not be read). Severity is INFO, WARNING, HIGH or CRITICAL.",
+    "sv": "Körs när YAHLA själv har ett problem. Typ är silence (inga loggar), resumed (loggar igen), flood (översvämning), unknown (okänt loggformat), forged (förfalskat), tamper (inställningar ändrade utifrån), socket (kan inte lyssna), socketBack (lyssnar igen) eller storeProblem (sparad data kunde inte läsas). Allvarlighet är INFO, WARNING, HIGH eller CRITICAL."
   },
   "tokens": [
     { "name": "kind", "type": "string", "title": { "en": "Kind", "sv": "Typ" }, "example": { "en": "silence", "sv": "silence" } },

@@ -37,7 +37,7 @@
       <li data-src="unifi"></li>
       <li data-src="asus"></li>
       <li data-src="openwrt"></li>
-      <li data-src="unsupported"></li>
+      <li data-src="other"></li>
     </ul>
     <p class="muted" data-src="note"></p>
   </fieldset>
@@ -56,6 +56,7 @@
     <fieldset class="homey-form-fieldset">
       <legend class="homey-form-legend" data-i18n="settings.newDevices"></legend>
       <p class="muted" data-i18n="settings.deviceHelp"></p>
+      <p class="muted" data-i18n="settings.privateHelp"></p>
       <div id="newList"></div>
     </fieldset>
 
@@ -82,6 +83,20 @@
         <option value="extended" data-i18n="settings.log.extended"></option>
         <option value="debug" data-i18n="settings.log.debug"></option>
       </select>
+    </fieldset>
+
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend" data-i18n="settings.reportTitle"></legend>
+      <p class="muted" data-i18n="settings.reportHelp"></p>
+      <select class="homey-form-select" id="reportMode">
+        <option value="off"></option>
+        <option value="short"></option>
+        <option value="full"></option>
+      </select>
+      <div class="homey-form-group">
+        <label class="homey-form-label" for="reportHour" data-i18n="settings.reportHour"></label>
+        <select class="homey-form-select" id="reportHour"></select>
+      </div>
     </fieldset>
 
     <fieldset class="homey-form-fieldset">
@@ -160,6 +175,8 @@
       // The end of the MAC is always shown next to a name, since a device can
       // give itself any name, also one that copies a trusted device.
       function macTail(mac) { return '...' + mac.slice(-5); }
+      // Locally administered ("private", often random) address.
+      function isPrivate(mac) { return /^[0-9a-f][26ae]:/.test(mac); }
 
       function deviceRow(d, actions) {
         var row = el('div', null, 'row');
@@ -167,6 +184,7 @@
         who.appendChild(el('small', t('deviceLine', {
           name: d.name || '-', ip: d.ip || '-', network: netLabel(d.network), where: d.where || '-', last: when(d.lastSeen),
         })));
+        if (isPrivate(d.mac)) who.appendChild(el('small', t('privateMac')));
         if (d.state !== 'new') who.appendChild(el('small', t('state.' + d.state)));
         row.appendChild(who);
         addButtons(row, d, actions);
@@ -220,6 +238,7 @@
         box.appendChild(sum);
         var info = el('div', null, 'info');
         info.appendChild(el('div', t('info.mac', { mac: d.mac })));
+        if (isPrivate(d.mac)) info.appendChild(el('div', t('privateMac')));
         info.appendChild(el('div', t('info.name', { name: d.name || '-' })));
         info.appendChild(el('div', t('info.ip', { ip: d.ip || '-' })));
         info.appendChild(el('div', t('info.network', { network: netLabel(d.network) })));
@@ -249,6 +268,8 @@
         renderNetworks();
         $('senders').value = config.senders.join(', ');
         $('logLevel').value = config.logLevel;
+        $('reportMode').value = config.report;
+        $('reportHour').value = String(config.reportHour);
         formLoaded = true;
       }
 
@@ -285,7 +306,6 @@
         var w = [];
         if (!s.listening) w.push(t('warnNotListening'));
         if (s.silent) w.push(t('warnSilent'));
-        if (!s.pinSet) w.push(t('warnNoPin'));
         if (s.locked) w.push(t('code.locked', { until: when(s.lockedUntil) }));
         if (s.unlocked && !config.senders.length) w.push(t('warnNoSenders'));
         $('warnings').textContent = w.join(' ');
@@ -329,6 +349,8 @@
           severity: severity,
           defaultSeverity: $('level-default').value,
           logLevel: $('logLevel').value,
+          report: $('reportMode').value,
+          reportHour: Number($('reportHour').value),
         };
         Homey.api('POST', '/config', { token: token, config: next }, function (err, r) {
           show(err, r);
@@ -375,6 +397,12 @@
       // Option texts and the router list are set here, not with data-i18n, to be sure they are translated.
       Array.prototype.forEach.call(document.querySelectorAll('[data-src]'), function (n) { n.textContent = t('sources.' + n.getAttribute('data-src')); });
       Array.prototype.forEach.call($('logLevel').options, function (o) { o.textContent = t('log.' + o.value); });
+      Array.prototype.forEach.call($('reportMode').options, function (o) { o.textContent = t('reportMode.' + o.value); });
+      for (var h = 0; h < 24; h += 1) {
+        var ho = el('option', (h < 10 ? '0' : '') + h + ':00');
+        ho.value = String(h);
+        $('reportHour').appendChild(ho);
+      }
 
       refresh();
       Homey.ready();

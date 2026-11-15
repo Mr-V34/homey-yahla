@@ -1,6 +1,6 @@
 {
   "id": "com.v34.yahla",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,24 @@
     "security"
   ],
   "brandColor": "#E05000",
+  "tags": {
+    "en": [
+      "network",
+      "security",
+      "unifi",
+      "syslog",
+      "intruder",
+      "wifi"
+    ],
+    "sv": [
+      "nätverk",
+      "säkerhet",
+      "unifi",
+      "syslog",
+      "intrång",
+      "wifi"
+    ]
+  },
   "permissions": [],
   "author": {
     "name": "Peter Persson (Mr-V34)",
@@ -30,6 +48,12 @@
       }
     ]
   },
+  "support": "mailto:info@v34.com",
+  "source": "https://github.com/Mr-V34/homey-yahla",
+  "bugs": {
+    "url": "https://github.com/Mr-V34/homey-yahla/issues"
+  },
+  "homepage": "https://github.com/Mr-V34/homey-yahla/blob/main/docs/MANUAL.md",
   "api": {
     "getStatus": {
       "method": "POST",
